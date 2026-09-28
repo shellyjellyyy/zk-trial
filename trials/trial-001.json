@@ -1,0 +1,27 @@
+{
+  "trialId": "TRIAL-001",
+  "title": "Phase II Metabolic Biomarker Study",
+  "description": "A synthetic, demo-only Phase II study evaluating a metabolic biomarker response in adults taking Medication X. This trial and all associated data are SYNTHETIC and exist only to demonstrate the zk-trial matching/verification flow. No real patients, sponsors, or medical data are involved.",
+  "sponsor": "Demo Biosciences (fictional, for MVP demonstration only)",
+  "status": "active",
+  "criteria": {
+    "age": { "min": 18, "max": 65 },
+    "biomarker": { "min": 40, "max": 80 },
+    "medication_x": true,
+    "country": "IN",
+    "pregnant": false,
+    "condition_y": false
+  },
+  "inclusion": [
+    "Age between 18 and 65 (inclusive)",
+    "Biomarker A level between 40 and 80 (inclusive)",
+    "Currently taking Medication X",
+    "Resident of India (country code IN)"
+  ],
+  "exclusion": [
+    "Currently pregnant",
+    "Diagnosed with Condition Y"
+  ],
+  "circuitConfigHash": "PLACEHOLDER_SET_BY_BUILD_SCRIPT",
+  "countryCode": 356
+}
