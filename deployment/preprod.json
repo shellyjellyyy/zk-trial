@@ -1,0 +1,18 @@
+{
+  "network": "testnet",
+  "networkLabel": "Stellar Testnet",
+  "sorobanRpcUrl": "https://soroban-testnet.stellar.org",
+  "contractId": "CCWXE7V7UU72S4EPCY54WWMQDXLHUTJLC33MXE6IO4KX6IOQAKTRV55F",
+  "contractWasmSha256": "7a7e885cb5bbd205198e945bd0683f48ac5124f098da48ff1b3313f9169dbec2",
+  "adminAddress": "GDUPFEAIPWMTJ4ENEEP4YTR2RQQHQMGNQUVE5WFVKXVUOOOLBAZZ4DNF",
+  "trialId": "TRIAL001",
+  "trialDisplayId": "TRIAL-001",
+  "trialConfigHash": "ca7b05f19e03b72c7b36478468a0da6d93a0ad17f7b502c73e5a47b9498534c3",
+  "transactions": {
+    "deploy": null,
+    "initAdmin": "f8f565943d42bc7742109ad8b141e30262bfb16617705250b676667c7544a2e8",
+    "initializeTrial": "853849194300d932ffd6888c8b50e1659d4851d2e8bcfc0f5f9937ff897de204",
+    "firstEnrollment": "15250c8980ca69da83c4b487f353a6452fabdbddff1541e4e005d3d836fbe11f"
+  },
+  "explorer": "https://stellar.expert/explorer/testnet"
+}
