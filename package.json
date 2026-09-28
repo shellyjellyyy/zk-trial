@@ -1,0 +1,28 @@
+{
+  "name": "zk-trial",
+  "version": "0.1.0",
+  "private": true,
+  "description": "zk-trial: private clinical trial eligibility matching using zero-knowledge proofs (research/demo MVP, synthetic data only)",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace apps/web",
+    "build": "npm run build --workspace apps/web",
+    "start": "npm run start --workspace apps/web",
+    "lint": "npm run lint --workspace apps/web",
+    "typecheck": "npm run typecheck --workspace apps/web",
+    "test": "npm run zk:test && npm run contract:test",
+    "zk:compile": "bash scripts/compile-circuit.sh",
+    "zk:setup": "bash scripts/setup-circuit-keys.sh",
+    "zk:test": "node --test --test-force-exit \"tests/zk/*.test.mjs\" \"tests/lib/*.test.mjs\"",
+    "contract:build": "cd contracts/zk_trial && cargo build --target wasm32-unknown-unknown --release",
+    "contract:test": "cd contracts/zk_trial && cargo test",
+    "deploy": "bash scripts/deploy-preprod.sh",
+    "check:files": "node scripts/check-required-files.mjs"
+  },
+  "devDependencies": {
+    "circomlib": "2.0.5",
+    "snarkjs": "0.7.5"
+  }
+}
