@@ -9,8 +9,9 @@ out/
 *.tsbuildinfo
 
 # production
-build/
-dist/
+/build/
+/apps/*/build/
+/dist/
 
 # rust / soroban
 target/
