@@ -1,0 +1,18 @@
+{
+  "age": 32,
+  "biomarker": 61,
+  "medicationX": 1,
+  "countryCode": 356,
+  "pregnant": 0,
+  "conditionY": 1,
+  "salt": 123456789,
+  "minAge": 18,
+  "maxAge": 65,
+  "minBiomarker": 40,
+  "maxBiomarker": 80,
+  "requiredMedicationX": 1,
+  "requiredCountryCode": 356,
+  "forbiddenPregnant": 1,
+  "forbiddenConditionY": 1,
+  "trialId": 1
+}
