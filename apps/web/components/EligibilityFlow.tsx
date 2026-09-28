@@ -118,8 +118,8 @@ export default function EligibilityFlow({ trial }: { trial: TrialConfig }) {
       if (err instanceof EligibilityNotSatisfiedError) {
         setStage("ineligible");
       } else {
-        // Safe: `err` never contains private health values.
-        console.error(err);
+        // Deliberately not logged: never write anything derived from the
+        // private health inputs to the console, even indirectly.
         setErrorMessage(err instanceof Error ? err.message : String(err));
         setStage("error");
       }

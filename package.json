@@ -16,7 +16,7 @@
     "zk:compile": "bash scripts/compile-circuit.sh",
     "zk:setup": "bash scripts/setup-circuit-keys.sh",
     "zk:test": "node --test --test-force-exit \"tests/zk/*.test.mjs\" \"tests/lib/*.test.mjs\"",
-    "contract:build": "cd contracts/zk_trial && cargo build --target wasm32-unknown-unknown --release",
+    "contract:build": "cd contracts/zk_trial && cargo build --target wasm32v1-none --release",
     "contract:test": "cd contracts/zk_trial && cargo test",
     "deploy": "bash scripts/deploy-preprod.sh",
     "check:files": "node scripts/check-required-files.mjs"
