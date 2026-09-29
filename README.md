@@ -16,7 +16,7 @@ ledger sees only an anonymous, trial-scoped nullifier and a counter.
 
 | | |
 |---|---|
-| **Live demo** | https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app |
+| **Live demo** | [https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app/](https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app/) |
 | **Network** | Midnight **Preprod** |
 | **Contract** | `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3` |
 | **Wallet** | [1AM Wallet](https://1am.xyz) (Chrome extension) |
