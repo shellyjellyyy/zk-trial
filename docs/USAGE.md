@@ -5,6 +5,18 @@ enroll as a participant, and read the sponsor dashboard. Everything here
 talks to **Midnight Preprod** through **Midnight.js** and the **Compact**
 contract; no Stellar/Soroban/Circom/snarkjs code exists in this project.
 
+## 0. Production deployment (live)
+
+A production deployment is live and pointed at a real deployed contract:
+
+| | |
+|---|---|
+| URL | https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app |
+| Network | Midnight Preprod |
+| Contract | `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3` |
+
+The steps below describe running the same flow locally.
+
 ## 1. Prerequisites
 
 | What | Why | Where |
@@ -127,7 +139,7 @@ That is the entire public footprint. See [`SECURITY.md`](../SECURITY.md).
 compact update 0.31.1
 compact compile +0.31.1 contracts/zk-trial.compact managed/zk-trial
 npm run copy:zk-assets
-npm test          # re-run the 35 contract tests
+npm test          # re-run the 37 tests
 ```
 
 CI fails if `managed/` differs from what the committed source compiles to,

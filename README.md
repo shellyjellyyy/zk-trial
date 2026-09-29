@@ -1,226 +1,428 @@
 # zk-trial
 
-[![CI](https://github.com/shellyjellyyy/zk-trial/actions/workflows/ci.yml/badge.svg)](https://github.com/shellyjellyyy/zk-trial/actions/workflows/ci.yml)
+**Prove clinical-trial eligibility with a zero-knowledge proof — without exposing a single health value.**
 
-**Prove clinical trial eligibility without exposing your medical history.**
+zk-trial is a private clinical-trial eligibility verification prototype built on
+**Midnight**: a Compact zero-knowledge circuit proves that a participant's
+synthetic health profile satisfies every inclusion and exclusion rule of a
+trial, while the raw inputs stay in the participant's browser and the public
+ledger sees only an anonymous, trial-scoped nullifier and a counter.
 
-> **Research / demo MVP.** Built for a Web3 + Zero-Knowledge Level 4
-> submission. Uses **entirely synthetic health data**. Not a medical device,
-> not a real clinical trial enrollment system, not medical advice. See
+> **Research / demo MVP.** Built for the Rise In × Midnight
+> *"New Moon to Full: Monthly Moonshots on Midnight"* Level 4 submission. Uses
+> **entirely synthetic health data**. Not a medical device, not a real
+> clinical-trial enrollment system, not medical advice. See
 > [`SECURITY.md`](./SECURITY.md) for the full disclaimer and threat model.
 
 | | |
 |---|---|
-| **LIVE DEMO** | `MANUAL ACTION REQUIRED — see "Frontend deployment" below` (Vercel login needed) |
-| **CONTRACT** | NOT DEPLOYED YET — deploy via the sponsor dashboard (1AM Wallet), then set `NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS` |
-| **NETWORK** | Midnight **Preprod** (`preprod`), indexer `https://indexer.preprod.midnight.network/api/v4/graphql` |
-| **WALLET** | [1AM Wallet](https://1am.xyz) browser extension (Chrome) |
-| **X / product profile** | `MANUAL ACTION REQUIRED` |
-| **Demo video** | `MANUAL ACTION REQUIRED` |
-| **CI** | `.github/workflows/ci.yml` — runs on every push and PR |
+| **Live demo** | https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app |
+| **Network** | Midnight **Preprod** |
+| **Contract** | `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3` |
+| **Wallet** | [1AM Wallet](https://1am.xyz) (Chrome extension) |
+| **Stack** | Compact · Midnight.js · 1AM Wallet · Next.js · TypeScript |
+| **Repository** | https://github.com/shellyjellyyy/zk-trial |
+| **Product X profile** | Public Product X profile will be linked here before final submission. |
 
-Everything marked `MANUAL ACTION REQUIRED` needs a personal account, wallet,
-or publishing credential and cannot be produced by the code in this repository.
+[![CI](https://github.com/shellyjellyyy/zk-trial/actions/workflows/ci.yml/badge.svg)](https://github.com/shellyjellyyy/zk-trial/actions/workflows/ci.yml)
 
 ---
 
-## What This Product Does
+## Problem
 
-Clinical trial recruitment normally requires participants to hand raw medical
-data (age, biomarkers, medications, conditions) to a sponsor just to find out
-whether they qualify. zk-trial lets a participant prove with a
-zero-knowledge proof that their private health profile satisfies **every**
-inclusion and exclusion rule of a trial simultaneously — without revealing
-any underlying value.
+Clinical-trial recruitment normally requires participants to hand raw medical
+data — age, biomarker levels, medications, pregnancy status, conditions — to a
+sponsor just to learn whether they qualify. A candidate who fails one
+criterion must reveal *which* one, and *what value* they had. Sensitive health
+information is disclosed long before there is any reason for the sponsor to
+see it, and it cannot be un-disclosed.
 
-For TRIAL-001 the private inputs are:
+This is a privacy problem, not a matching problem.
 
-- age 18–65
-- biomarker 40–80
-- currently taking Medication X
-- resident of India (ISO-3166 numeric 356)
-- not pregnant
-- does not have Condition Y
+## Solution
 
-What the sponsor only ever learns: the trial ID, the sponsor name, a running
-public enrollment counter, and an anonymous trial-scoped nullifier. Not the
-inputs, not the identity, not which criterion failed.
+zk-trial lets a participant prove, with a **single zero-knowledge proof**,
+that their private health profile satisfies **every** inclusion and exclusion
+rule of a trial simultaneously — without revealing any underlying value:
+
+- The eligibility rules are `assert`s **inside the Compact circuit**
+  (`contracts/zk-trial.compact`). An ineligible profile makes the constraint
+  system unsatisfiable: no proof, no transaction, nothing on-chain.
+- The raw eligibility values exist only as **witness inputs** read in the
+  participant's browser at proving time. They are never transmitted, logged,
+  or stored on-chain.
+- The circuit itself derives an **anonymous, trial-scoped nullifier** from a
+  private seed and returns it as the proof's public output. The on-chain
+  footprint of an enrollment is exactly 32 bytes plus `+1` on a public counter.
+- The transaction is proven, balanced, and submitted through the participant's
+  own **1AM Wallet** — there is no server-side signer anywhere in this project.
+
+The sponsor reads live contract state and sees a running enrollment count and
+anonymous nullifier set — never a participant, and never a health value.
+
+## Key Features
+
+- **Private eligibility verification** — all six criteria enforced inside the
+  ZK circuit, not in frontend code
+- **Compact ZK circuit** — `contracts/zk-trial.compact`, compiled with the
+  pinned Compact toolchain 0.31.1
+- **Midnight Preprod** — real network, real indexer, real finalization
+- **1AM Wallet** — connect, prove, balance, and submit through the DApp
+  Connector API (`window.midnight['1am']`)
+- **Anonymous enrollment / nullifier** — trial-scoped, derived inside the
+  circuit, inserted into an on-chain used-nullifier set (duplicate enrollment
+  is rejected by ledger state, not by UI policy)
+- **Public enrollment count** — readable by anyone via the Preprod indexer,
+  no wallet required
+- **Sponsor dashboard** — wallet-free read-only view of live contract state
+- **Real signed transaction flow** — deploy, prove, balance, submit,
+  finalize; the UI reports success only after the indexer confirms a
+  succeeding transaction, and displays the real transaction id and block height
+
+## Eligibility Criteria
+
+For the synthetic trial `TRIAL-001`:
+
+| # | Criterion | Kind |
+|---|---|---|
+| 1 | age 18–65 | inclusion |
+| 2 | biomarker 40–80 | inclusion |
+| 3 | medication_x = true (currently taking Medication X) | inclusion |
+| 4 | country = India / IN (ISO-3166 numeric 356) | inclusion |
+| 5 | pregnant = false | exclusion |
+| 6 | condition_y = false | exclusion |
+
+**These are synthetic demonstration criteria.** There is no real trial, no
+real sponsor, no real biomarker, and no real patients. They exist to
+demonstrate the privacy flow end to end.
 
 ## Privacy Model
 
-| Value | In browser | On-chain | Sent to sponsor |
+| Value | In browser | On-chain | Visible to sponsor |
 |---|:---:|:---:|:---:|
 | age | yes | **no** | **no** |
 | biomarker level | yes | **no** | **no** |
 | medication status | yes | **no** | **no** |
-| country | yes | **no** | **no** |
+| country (raw value) | yes | **no** | **no** |
 | pregnancy status | yes | **no** | **no** |
 | condition status | yes | **no** | **no** |
 | participant seed (private) | yes | **no** | **no** |
-| raw health JSON | yes | **no** | **no** |
+| anonymous nullifier (32 bytes) | derived in-circuit | yes | yes |
 | trial ID | yes | yes | yes |
 | sponsor name | yes | yes | yes |
-| anonymous nullifier | — | yes | yes |
 | enrollment counter | — | yes | yes |
+| used-nullifier set | — | yes | yes |
 
-The health values are witness inputs to the `enroll` circuit. They are read
-by the witness functions in your browser at proving time and never
-transmitted. The circuit **asserts** every criterion before the transaction
-can even be constructed: if any predicate fails, no proof exists, no
-transaction is built, and nothing is submitted. The returned on-chain
-footprint is the 32-byte nullifier and the counter increment — see
-`contracts/zk-trial.compact`.
+Precisely stated:
 
-## Tech Stack
+- **PRIVATE:** the eligibility inputs, all health-related values, and the
+  participant identity (seed). These are witness inputs consumed by the
+  circuit in the browser; the shipped code contains no path that transmits
+  them.
+- **PUBLIC:** the trial ID, the enrollment count, the necessary
+  anonymous/nullifier state, and contract/network information (contract
+  address, indexer endpoints).
 
-| Layer | Choice |
-|---|---|
-| Contract language | **Compact** (language 0.23, toolchain 0.31.1) |
-| Contract runtime | `@midnight-ntwrk/compact-runtime` 0.16.0 |
-| Client framework | **Midnight.js 4.1.1** (`midnight-js`, `midnight-js-contracts`, `ledger-v8`) |
-| Wallet | **1AM Wallet** via Midnight DApp Connector API (`window.midnight['1am']`) |
-| Proving | 1AM ProofStation via `midnight-js-dapp-connector-proof-provider` (HTTP proof-server fallback) |
-| Network | **Midnight Preprod** (indexer + node via wallet config; public indexer as read-only fallback) |
-| Frontend | Next.js 15.5 (App Router), React 18.3, TypeScript 5.6, Tailwind 3.4 |
-| Tests | Vitest — 35 Compact contract tests |
-| CI | GitHub Actions |
+What the sponsor learns from an enrollment: *someone with a valid proof
+enrolled, and this is their anonymous trial-scoped nullifier.* What they do
+not learn: any input value, which criterion a rejected candidate failed, or
+who the participant is. A rejected candidate produces no transaction at all —
+the circuit refuses to construct a proof.
 
 ## Architecture
 
 ```
-Browser
-  ↓  private health values (witness inputs, never transmitted)
-1AM Wallet
-  ↓  getProvingProvider() → ZK proof · balanceUnsealedTransaction() → fees sponsored
-Midnight.js (midnight-js-contracts)
-  ↓  deployContract / findDeployedContract / callTx
-Compact contract (contracts/zk-trial.compact)
-  ↓  ZK circuit execution (eligibility asserts + nullifier + counter)
-Midnight Preprod
+Participant
+  │  enters synthetic private eligibility inputs
+  ▼
+Private eligibility inputs          (age, biomarker, medication, country,
+  │                                  pregnancy, condition + private seed)
+  ▼
+Browser / Compact ZK execution      (witnesses in src/witnesses.ts feed the
+  │                                  `enroll` circuit; every criterion is a
+  │                                  circuit assert; no proof if ineligible)
+  ▼
+1AM Wallet                          (DApp Connector: proving provider,
+  │                                  balanceUnsealedTransaction, submission)
+  ▼
+Midnight Preprod                    (transaction finalized by the network;
+  │                                  verifier keys checked against the
+  │                                  deployed contract state)
+  ▼
+Anonymous enrollment state          (32-byte nullifier inserted into the
+  │                                  on-chain set; counter +1)
+  ▼
+Sponsor Dashboard                   (reads live state via the Preprod
+                                     indexer — no wallet, read-only)
 ```
 
-The old Circom/snarkjs/Stellar/Soroban implementation was removed in
-`ee7c011` and is not part of this codebase.
+Components:
 
-## Prerequisites
+- **Compact contract** (`contracts/zk-trial.compact`) — ledger state is
+  exactly `trialId`, `sponsor`, `enrollments: Counter`,
+  `usedNullifiers: Set<Bytes<32>>`; the `enroll` circuit asserts all six
+  criteria, derives and discloses the nullifier, rejects reuse, and
+  increments the counter.
+- **Witnesses** (`src/witnesses.ts`) — the only place health data exists;
+  browser-side, executed at proving time.
+- **Midnight.js providers** (`src/midnight/providers.ts`) — the standard
+  six-provider Midnight.js stack: in-memory private state, Preprod indexer
+  public data, fetch-based ZK artifact config, 1AM proving, 1AM balancing,
+  1AM submission.
+- **1AM Wallet** (`src/midnight/wallet.ts`) — discovered via the Midnight
+  DApp Connector API at `window.midnight['1am']`; network mismatch is
+  detected and surfaced.
+- **Sponsor dashboard** (`src/app/sponsor/page.tsx`) — providerless read-only
+  path through the Preprod indexer; its provider set throws on any attempt
+  to prove, balance, or submit.
 
-- Node.js ≥ 22
-- Compact devtools (`compact`) with toolchain `0.31.1` —
-  [install instructions](https://docs.midnight.network)
-- [1AM Wallet](https://1am.xyz) browser extension (only needed to submit a
-  real transaction or deploy the contract; the UI states clearly when it is
-  missing)
-- A Unix-like shell (WSL works on Windows) for the Compact CLI
+A longer walkthrough, including the exact transaction lifecycle, is in
+[`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
-## Setup & Run Locally
+## Why Midnight
+
+Midnight's Compact language puts the privacy boundary **in the contract
+itself**: the same circuit that defines the ledger's public state also
+defines what must remain provable-but-unstated. That is exactly the shape
+this problem needs:
+
+- Eligibility is enforced **by the proof system**, not by app logic — an
+  ineligible input cannot yield an accepted enrollment, because no proof
+  exists for it. There is no "frontend checked it, contract trusts it" gap.
+- The circuit **returns** the nullifier as public proof output, so a prover
+  cannot attach an arbitrary nullifier to a valid proof.
+- The proof is verified by the network as part of transaction validation —
+  an invalid proof never produces a ledger update. This is a Midnight
+  protocol property, not application code.
+- Midnight.js gives the complete transaction lifecycle (build → prove →
+  balance → submit → finalize) from the browser, with the wallet as the
+  signer and no server-side key material anywhere.
+
+These are properties demonstrated by the shipped implementation; for the
+authoritative description of Midnight's protocol-level guarantees, see the
+[Midnight documentation](https://docs.midnight.network).
+
+## Live Demo
+
+https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app
+
+Open **Trials → TRIAL-001** to run the enrollment flow (requires the 1AM
+Wallet extension on Midnight Preprod), or open **Sponsor Dashboard** to see
+the public enrollment count read live from chain state — no wallet needed.
+
+## Network
+
+**Midnight Preprod** (`preprod`). The app registers the network id once at
+module load (`src/midnight/config.ts`) and refuses a wallet connected to any
+other network. Public indexer:
+`https://indexer.preprod.midnight.network/api/v4/graphql`.
+
+## Contract
+
+Deployed zk-trial Compact contract on Midnight Preprod:
+
+```
+dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3
+```
+
+The address is injected to the app via `NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS`
+(see [Environment Variables](#environment-variables)). The contract was
+deployed through the in-app sponsor deploy panel with 1AM Wallet; no CLI
+deployment script is required.
+
+## Wallet
+
+[**1AM Wallet**](https://1am.xyz) — the browser extension for Midnight. It
+provides the DApp Connector API, the proving provider (ProofStation — fees
+and proving are sponsored, so no token funding is needed to try the demo),
+transaction balancing, and submission relay.
+
+## Example Successful Transaction
+
+A real, successful enrollment transaction on Midnight Preprod:
+
+```
+00f78951dd1250f4e0559ac80a7d49c5d7b8f7a445548028dab59e6c60bd02bb18
+```
+
+This is an example of a successful Preprod enrollment: the `enroll` circuit
+was proven with synthetic private inputs, the transaction was approved and
+balanced by 1AM Wallet, finalized on Midnight Preprod, and the public
+enrollment counter incremented. No participant information is attached to or
+derivable from this section — the transaction's public content is the
+anonymous nullifier and the counter increment.
+
+## Local Setup
+
+Prerequisites: Node.js ≥ 22, npm.
 
 ```bash
-npm ci
-npm run copy:zk-assets   # copies managed/ ZK artifacts into public/zk
-npm run dev              # http://localhost:3000
+git clone https://github.com/shellyjellyyy/zk-trial
+cd zk-trial
+npm install          # postinstall normalizes Midnight exports maps
+npm test             # 37 contract/identity tests
+npm run dev          # http://localhost:3000
 ```
 
-### Configuration
+All scripts that exist in `package.json`:
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Next.js dev server (copies ZK assets first via `predev`) |
+| `npm run build` | production build (copies ZK assets first via `prebuild`) |
+| `npm start` | serve the production build |
+| `npm test` | run the full Vitest suite (37 tests) |
+| `npm run test:watch` | Vitest in watch mode |
+| `npm run contract:test` | the Compact contract tests only (`tests/zk-trial.test.ts`) |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint (`next lint`) |
+| `npm run compact:compile` | recompile `contracts/zk-trial.compact` → `managed/zk-trial` (needs the Compact CLI, toolchain 0.31.1) |
+| `npm run compact:format` | check Compact source formatting |
+| `npm run copy:zk-assets` | copy compiled ZK artifacts from `managed/` into `public/zk` |
+
+Recompiling the contract requires the [Compact devtools](https://docs.midnight.network)
+(toolchain 0.31.1). CI recompiles and fails on any diff against the committed
+`managed/` artifacts, so the committed keys always correspond to the
+committed source.
+
+## Environment Variables
+
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS` | Address of the deployed zk-trial contract (the Preprod address above). Read by the app to join and read contract state. |
+| `NEXT_PUBLIC_MIDNIGHT_NETWORK` | Target Midnight network; defaults to `preprod`. Keep in sync with `src/midnight/config.ts`. |
+| `NEXT_PUBLIC_ZK_ASSETS_BASE_URL` | Optional. Override only if ZK artifacts are hosted on a CDN instead of the app's own `/zk/` path. |
+| `NEXT_PUBLIC_PROOF_SERVER_URL` | Optional HTTP proof-server fallback, used only if the connected wallet exposes no proving provider. 1AM always does, so this normally stays empty. |
+
+Copy `.env.example` to `.env.local` for local development. **`.env.local` is
+local configuration and must not be committed** — it is git-ignored. All
+variables are `NEXT_PUBLIC_*` (public by design: a contract address and
+network endpoints are public information). There is no secret in this
+project: no `PRIVATE_KEY`, seed, or mnemonic exists anywhere, because
+signing and proving happen in the participant's own wallet.
+
+## Testing
+
+The full suite is green: **37/37 tests passing**.
 
 ```bash
-cp .env.example .env.local
+npm test
 ```
 
-All variables are `NEXT_PUBLIC_*` and public by design. The contract address
-stays **empty** until you deploy; the UI then shows an honest "not deployed
-yet" state (see [Usage Guide](./docs/USAGE.md)).
+Coverage highlights (`tests/zk-trial.test.ts`, 35 contract tests + a
+2-test runtime-identity regression suite):
 
-**Where a secret would go: nowhere.** This project has no server-side
-signer. Proving, balancing, and submission all happen through the
-participant's own 1AM Wallet. There is no `PRIVATE_KEY`, `SEED`, `MNEMONIC`,
-or `API_KEY` anywhere in this repository.
-
-## Run Tests
-
-```bash
-npm test             # 35 Compact contract tests (eligibility, privacy,
-                     # nullifiers, duplicate prevention, cross-trial isolation)
-npm run compact:compile   # recompile contracts/zk-trial.compact -> managed/
-npm run typecheck    # tsc --noEmit
-npm run lint         # eslint
-npm run build        # production build (also copies ZK assets)
-```
-
-The test suite covers:
-
-- a valid synthetic patient enrolls and receives a 32-byte nullifier
-- every criterion enforced: age <18 / >65, biomarker <40 / >80, missing
-  Medication X, wrong country, pregnant, Condition Y all reject
-- the public enrollment counter increments and agrees with the read circuit
-- a repeated nullifier is rejected (duplicate enrollment prevention)
-- two trials derive different nullifiers from the same seed (cross-trial
-  separation)
+- every eligibility criterion enforced (age <18 / >65, biomarker <40 / >80,
+  missing Medication X, wrong country, pregnant, Condition Y — all reject)
+- valid synthetic profile enrolls and receives a 32-byte nullifier
+- public enrollment counter increments and agrees with the read circuit
+- repeated nullifier rejected (duplicate enrollment prevention)
+- two trials derive different, unlinkable nullifiers from the same seed
+  (cross-trial separation)
 - the participant seed never appears in public ledger state (privacy)
+
+Additionally verified (manually and in CI):
+
+- **Compact compilation** — toolchain 0.31.1 reproduces the committed
+  `managed/` artifacts byte-for-byte
+- **Typecheck** — `tsc --noEmit` clean
+- **Lint** — ESLint clean
+- **Production build** — `next build` succeeds (all routes)
+- **CI** — GitHub Actions green on every push
 
 ## CI/CD
 
-`.github/workflows/ci.yml` runs on every push and PR:
+[`.github/workflows/ci.yml`](./.github/workflows/ci.yml) runs on every push
+and pull request:
 
-1. checkout + Node 22 + `npm ci`
-2. install Compact devtools, pin toolchain 0.31.1
-3. `compact compile` and **fail on any diff** against committed `managed/`
+1. checkout, Node 22, `npm ci`
+2. required/forbidden file check (`scripts/check-required-files.mjs`)
+3. install Compact devtools, pin toolchain 0.31.1
+4. `compact compile` and **fail on any diff** against committed `managed/`
    artifacts (source/artifact parity)
-4. `npx vitest run` (35 contract tests)
-5. `npx tsc --noEmit`
-6. `npm run lint`
-7. `npm run build`
+5. `npx vitest run` (37 tests)
+6. `npx tsc --noEmit`
+7. `npm run lint`
+8. `npm run build`
 
-Every step is run locally before being added to CI.
+Badged above — it is the repository's real workflow, not a decoration.
 
-## Usage Guide
+## Deployment
 
-See [`docs/USAGE.md`](./docs/USAGE.md) for the full walkthrough
-(connect wallet, deploy, enroll, sponsor dashboard).
+The frontend is deployed on **Vercel** from this repository
+(`vercel.json` pins the framework, install, and build commands). The live
+production deployment is the [demo link](#live-demo) above.
 
-Short version:
-
-1. Open `/trials/TRIAL-001`, read the criteria.
-2. Enter your (synthetic) private health values.
-3. Click **Connect 1AM Wallet and enroll** — approve in the wallet.
-4. The circuit proves eligibility in-browser, 1AM/ProofStation proves and
-   balances the transaction, and it is submitted to Midnight Preprod.
-5. On finalization you see the transaction id, block height, your anonymous
-   nullifier, and the public enrollment count.
-
-## Contract Address
-
-The contract is deployed from the sponsor dashboard (**Sponsor Dashboard →
-Deploy to Midnight Preprod**) through 1AM Wallet; 1AM's ProofStation sponsors
-the fees. After deployment, set the printed address:
-
-```bash
-NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS=<address from deploy panel>
-```
-
-The address is recorded here once a real deployment exists:
-
-| Field | Value |
-|---|---|
-| Contract address | `NOT DEPLOYED YET` |
-| Deployment tx | `NOT DEPLOYED YET` |
-| Network | Midnight Preprod |
-
-## Product X Profile
-
-`MANUAL ACTION REQUIRED — write the X/Twitter post linking the live demo,
-this repo, and the demo video.`
-
-Suggested copy:
-
-> zk-trial: prove you qualify for a clinical trial without revealing a
-> single health value. Compact circuits on Midnight Preprod, proven in
-> your browser, relayed by 1AM Wallet — age, biomarkers, and conditions
-> never leave your device. The sponsor only ever sees an anonymous
-> nullifier and a counter.
+The Compact contract is deployed to **Midnight Preprod** through the app
+itself: Sponsor Dashboard → *Connect 1AM Wallet and deploy*, which runs the
+real `deployContract()` pipeline (constructor proof via the wallet's proving
+provider, wallet balancing, wallet relay, indexer finalization). That is how
+the recorded contract address above was produced — no deployment CLI was
+used. To point a new deployment at the recorded contract, set
+`NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS` and redeploy.
 
 ## Security
 
-See [`SECURITY.md`](./SECURITY.md).
+See [`SECURITY.md`](./SECURITY.md) for the data-handling policy, the
+nullifier construction and its limitations, the threat model, and the
+explicit list of what this prototype does **not** defend against.
+
+## Threat Model
+
+Summary (full version in [`SECURITY.md`](./SECURITY.md)):
+
+**Defended (by the shipped implementation):**
+- sponsor/on-chain observer learning any eligibility value — impossible by
+  construction: the values exist only as browser-side witness inputs
+- duplicate enrollment with the same seed — rejected by the on-chain
+  used-nullifier set
+- cross-trial correlation via nullifiers — trial-scoped hash inputs
+- prover attaching an arbitrary nullifier — the circuit computes and returns it
+- ineligible profile being accepted — the circuit asserts make the constraint
+  system unsatisfiable
+- talking to a contract compiled from different source — the SDK's join path
+  validates deployed verifier keys against the local compiled artifacts
+
+**Not defended (documented, not hidden):**
+- Sybil enrollment via fresh browser state (the seed is session-scoped)
+- confidentiality of the trial criteria (intentionally public)
+- security of the 1AM Wallet extension / ProofStation themselves (third party)
+- Preprod is a test network: resets and protocol changes are possible
+- anything resembling production clinical-trial compliance, KYC, or real
+  patient data handling
+
+## Limitations
+
+- **Synthetic data only.** No real patients, sponsors, biomarkers, or trials.
+- **Prototype/MVP.** Built for a hackathon submission; expect MVP-quality
+  operational hardening.
+- **Preprod.** Midnight Preprod is a test network; nothing here is a mainnet
+  deployment, and test networks can reset.
+- **Not a production clinical-trial system.** No regulatory compliance, no
+  consent management, no KYC, no audit trail suitable for real research.
+- **Not medical advice.** Nothing in this repository is clinical guidance.
+- **No real patient data.** Do not enter real health information — the demo
+  only makes sense with synthetic values.
+- **Wallet/network assumptions.** Enrollment requires the 1AM Wallet
+  extension on Chrome with Midnight Preprod selected; the sponsor dashboard
+  requires indexer availability.
+- **Session-scoped identity.** The participant seed lives in browser memory
+  for the session; reloading creates a fresh identity, so Sybil resistance
+  is explicitly out of scope for this MVP.
+- **Unbounded nullifier set.** The on-chain used-nullifier set grows with
+  enrollments (acceptable at demo scale).
+- **Eligibility criteria are public** (they live in `trials/trial-001.json`);
+  only the participant's values are private.
+
+## Product X
+
+Public Product X profile will be linked here before final submission.
+The prepared profile copy, launch post, and setup checklist are in
+[`docs/PRODUCT_X_SETUP.md`](./docs/PRODUCT_X_SETUP.md).
+
+## Repository
+
+https://github.com/shellyjellyyy/zk-trial
 
 ## License
 

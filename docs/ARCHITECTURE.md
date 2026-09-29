@@ -51,7 +51,7 @@ system unsatisfiable — witness generation throws and **no proof can be
 constructed at all**. There is no path to a "false but accepted" proof, and
 no separate verifier to keep in sync: the same compiled circuit runs in the
 browser (prover) and is verified by the network from the deployed verifier
-key. 35 automated tests cover the criteria, privacy, nullifiers, duplicate
+key. 37 automated tests cover the criteria, privacy, nullifiers, duplicate
 prevention, and cross-trial isolation.
 
 ## Why Midnight.js 4.x + the DApp Connector

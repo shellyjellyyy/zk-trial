@@ -63,7 +63,7 @@ wallet and its provider set throws on any attempt to prove/balance/submit.
 | Claim | Evidence |
 |---|---|
 | Compact contract compiles with pinned toolchain | `compact compile +0.31.1 contracts/zk-trial.compact managed/zk-trial` → "Compiling 2 circuits:", zero diff vs committed `managed/` |
-| Contract logic (criteria, privacy, nullifiers, dedup, counter, cross-trial separation) | `npx vitest run` → **35/35 passing** |
+| Contract logic (criteria, privacy, nullifiers, dedup, counter, cross-trial separation) | `npx vitest run` → **37/37 passing** (35 Compact contract tests + 2 runtime-identity regression tests) |
 | Type safety | `npx tsc --noEmit` → clean |
 | Lint | `npm run lint` → "No ESLint warnings or errors" |
 | Production build | `npm run build` → all routes generated (/, /sponsor, /trials/TRIAL-001) |
@@ -77,20 +77,29 @@ happen — never before.
 ## Repository & milestones
 
 - Remote: https://github.com/shellyjellyyy/zk-trial
-- 20+ meaningful commits covering: Compact privacy core, contract test
-  coverage, removal of the legacy Stellar stack, Midnight.js provider
+- Live demo: https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app
+- Deployed contract (Midnight Preprod):
+  `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3`
+- 18 meaningful commits covering: Compact privacy core, contract test
+  coverage, removal of the legacy prototype stack, Midnight.js provider
   stack, 1AM Wallet integration, UI rewrite, Preprod configuration,
-  deployment flow, CI, and docs.
+  real deployment + enrollment, CI, and docs.
+
+## Real network evidence
+
+| Artifact | Value |
+|---|---|
+| Network | Midnight Preprod |
+| Contract address | `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3` |
+| Example enrollment tx | `00f78951dd1250f4e0559ac80a7d49c5d7b8f7a445548028dab59e6c60bd02bb18` |
+| Wallet | 1AM Wallet (DApp Connector, ProofStation-sponsored fees) |
 
 ## What remains manual (honest list)
 
-- **Vercel deployment** (needs the owner's account): after setting
-  `NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS`, `vercel --prod`.
-- **X/Twitter profile post** (needs the owner's account).
-- **Demo video** (needs a screen recorder + the owner's wallet).
-- **First Preprod deployment** (needs the owner's 1AM Wallet click):
-  Sponsor Dashboard → *Connect 1AM Wallet and deploy*. Fees are sponsored
-  by 1AM ProofStation, so no token funding is needed.
+- **Product X profile + launch post** (needs the owner's account; prepared
+  copy in `docs/PRODUCT_X_SETUP.md`).
+- **Demo video** (needs a screen recorder + the owner's wallet; script in
+  `docs/DEMO_SCRIPT.md`).
 
 ## License
 
