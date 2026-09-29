@@ -7,8 +7,8 @@ on:
     branches: ["**"]
 
 jobs:
-  frontend-and-zk:
-    name: Frontend, lint, typecheck, ZK tests, build
+  build-and-test:
+    name: Compact compile, contract tests, typecheck, lint, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,51 +16,38 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify required files exist
+      - name: Verify required files exist (and legacy files stay removed)
         run: node scripts/check-required-files.mjs
 
-      - name: Lint
-        run: npm run lint --workspace apps/web
+      - name: Install Compact devtools
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf \
+            https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Install Compact toolchain 0.31.1
+        run: compact update 0.31.1
+
+      - name: Compile Compact contract (toolchain 0.31.1)
+        run: compact compile +0.31.1 contracts/zk-trial.compact managed/zk-trial
+
+      - name: Assert committed ZK artifacts match source
+        run: git diff --exit-code -- managed/
+
+      - name: Run Compact contract tests
+        run: npx vitest run
 
       - name: Typecheck
-        run: npm run typecheck --workspace apps/web
+        run: npx tsc --noEmit
 
-      - name: Run ZK circuit + lib tests
-        run: npm run zk:test
+      - name: Lint
+        run: npm run lint
 
       - name: Build frontend
-        run: npm run build --workspace apps/web
-
-  contract:
-    name: Soroban smart contract tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32v1-none
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            contracts/zk_trial/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('contracts/zk_trial/Cargo.lock') }}
-
-      - name: Run contract unit tests
-        working-directory: contracts/zk_trial
-        run: cargo test
-
-      - name: Build contract to wasm (release)
-        working-directory: contracts/zk_trial
-        run: cargo build --target wasm32v1-none --release
+        run: npm run build

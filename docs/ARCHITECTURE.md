@@ -5,79 +5,124 @@
 ```
  browser (participant)
  ┌──────────────────────────────────────────────────────────────────┐
- │  private health values (age, biomarker, medication, ...)          │
+ │  private health values (age, biomarker, medication, country,      │
+ │  pregnancy, condition) + participant seed                         │
  │            │                                                      │
+ │            ▼  witness functions (src/witnesses.ts)                │
+ │  Compact `enroll` circuit asserts every criterion                 │
+ │            │  if any assert fails: no witness, no proof, no tx    │
  │            ▼                                                      │
- │  ZK proof generation (snarkjs + compiled Circom circuit, WASM)    │
- │            │                                                      │
- │            ▼                                                      │
- │  local proof verification (snarkjs, against verification_key.json)│
- │            │                                                      │
- │            ▼                                                      │
- │  anonymous nullifier = SHA256(local secret, trial_id)             │
+ │  ZK proof generated via 1AM Wallet's proving provider             │
  └────────────┼─────────────────────────────────────────────────────┘
-              │  ONLY {trial_id, nullifier, timestamp} crosses this line
+              │  ONLY {nullifier, counter increment} crosses this line
               ▼
-      Soroban transaction: record_enrollment(trial_id, nullifier)
+  1AM Wallet: balanceUnsealedTransaction() (ProofStation sponsors fees)
               │
               ▼
-      Stellar/Soroban smart contract (contracts/zk_trial)
-        - rejects duplicate nullifier for the same trial
-        - increments public enrollment_count
-        - emits an event
+  Midnight.js submitTx → Midnight Preprod
               │
               ▼
-      Sponsor dashboard reads enrollment_count via Soroban RPC
+  Compact contract (contracts/zk-trial.compact)
+    - rejects a reused nullifier for the trial
+    - increments public enrollments counter
+              │
+              ▼
+  Sponsor dashboard reads contract state via Preprod indexer
+  (no wallet required for reads)
 ```
 
-## Why the ZK proof is verified off-chain, not on-chain
+## Why Compact on Midnight
 
-Groth16/Circom-based proof verification requires BN254 pairing operations.
-Implementing a genuine pairing-based Groth16 verifier as a Soroban contract
-is a substantial undertaking on its own (Soroban's host environment does not
-currently ship a ready-made BN254 pairing precompile the way some EVM chains
-do), and doing it convincingly within an MVP's time budget risked exactly
-the kind of "fake on-chain verification" this project explicitly avoids (see
-`README.md` → "No fake features").
+The eligibility predicate is expressed once, in the contract itself:
 
-So this MVP makes a **deliberate, documented architecture choice**: the
-cryptographic eligibility check happens off-chain, in the browser, using a
-real Groth16 proof that is really generated and really verified with
-snarkjs. The blockchain's job here is narrower and honestly described: it is
-the **immutable public enrollment/attestation layer** — a tamper-evident,
-publicly auditable counter and anti-duplicate-enrollment mechanism, not the
-verifier of the cryptographic claim itself.
+```compact
+assert(age >= 18, "Age below the minimum of 18");
+assert(age <= 65, "Age above the maximum of 65");
+assert(biomarker >= 40, ...);
+assert(biomarker <= 80, ...);
+assert(medicationX, ...);
+assert(country == 356, ...);       // ISO-3166-1 numeric: India
+assert(!pregnant, ...);
+assert(!conditionY, ...);
+```
 
-If you extend this project, the natural next step is an on-chain Groth16
-verifier (e.g. compiling a pairing-check contract, or using a proof system
-with lighter on-chain verification), which would let `record_enrollment`
-take the proof itself and verify it on-chain before incrementing the
-counter. This is called out as a roadmap item in `README.md`.
+Because these are circuit asserts, an ineligible input makes the constraint
+system unsatisfiable — witness generation throws and **no proof can be
+constructed at all**. There is no path to a "false but accepted" proof, and
+no separate verifier to keep in sync: the same compiled circuit runs in the
+browser (prover) and is verified by the network from the deployed verifier
+key. 35 automated tests cover the criteria, privacy, nullifiers, duplicate
+prevention, and cross-trial isolation.
 
-## Why Circom + snarkjs
+## Why Midnight.js 4.x + the DApp Connector
 
-Circom 2 is a mature, actively maintained circuit DSL with first-class
-browser support via snarkjs (WASM witness generation + Groth16 proving
-entirely client-side, no server round trip for the private inputs). This
-lets "private inputs never leave the browser" be a real, checkable property
-of the shipped code rather than a claim about a design that was never built.
+Midnight.js (`deployContract`, `findDeployedContract`, `callTx`) drives the
+full transaction lifecycle from the browser. It is built around six
+providers (`MidnightProviders`):
 
-## Why Stellar/Soroban
+| Provider | Implementation here | Role |
+|---|---|---|
+| `privateStateProvider` | in-memory (src/midnight/providers.ts) | holds private state scoped per contract address; health inputs are stored only for the duration of one call |
+| `publicDataProvider` | `indexerPublicDataProvider` (wallet config → Preprod fallback) | reads contract state, waits for finalization |
+| `zkConfigProvider` | `FetchZkConfigProvider` over `/zk/` | fetches prover/verifier keys + zkIR from the app itself |
+| `proofProvider` | `dappConnectorProofProvider` (1AM) with HTTP proof-server fallback | generates the ZK proof |
+| `walletProvider` | 1AM `balanceUnsealedTransaction` | balances the tx, sponsors fees |
+| `midnightProvider` | 1AM `submitTransaction` | relays the sealed tx to the chain |
 
-Soroban contracts are written in Rust, compiled to WASM, and have
-first-class primitives (`Map`, `BytesN`, `Address`, ledger timestamps,
-events) that map cleanly onto "anonymous enrollment counter with duplicate
-protection" without needing a custom token or unusual account model. The
-Stellar Testnet is the current public, freely-fundable (via Friendbot)
-network used here as the required Level 4 "Preprod" target.
+The wallet arrives through the standard **Midnight DApp Connector API**:
+1AM injects its `InitialAPI` at `window.midnight['1am']`; `connect('preprod')`
+yields the `ConnectedAPI` used above. No proprietary adapter and no fake
+wallet object: if 1AM is absent the UI says so and stops.
 
-## Why local, deterministic AI-assisted matching
+The transaction flow (from 1AM's developer docs) is exactly:
 
-The spec requires the app to work without any paid API key. A hosted LLM
-integration would make the whole project depend on a key nobody reviewing
-the submission necessarily has. `lib/trial/matching.ts` instead scores
-trials against a profile using simple, fully transparent weighted feature
-matching — deterministic, inspectable, and correctly described as "automated
-candidate ranking" rather than "the AI decided you're eligible." The
-eligibility decision itself is always made by the ZK circuit, never by this
-module.
+1. **Build** — midnight-js creates the unproven transaction with the
+   compiled contract.
+2. **Prove** — `proveTx()` → wallet proving provider → ZK proof.
+3. **Balance** — `balanceUnsealedTransaction()` → ProofStation adds dust
+   fees server-side (user needs zero NIGHT/DUST).
+4. **Submit** — `submitTransaction()` → wallet broadcasts to Midnight.
+
+The UI only reports success after the indexer confirms finalization with a
+succeeding status; a `FailEntirely` transaction surfaces as an error and the
+counter is never incremented.
+
+## Why the proof runs in the browser (not a server)
+
+Witness functions are the only place health data exists. Keeping them
+client-side means "private inputs never leave the browser" is a property of
+the shipped code, not a policy. The proof itself is generated by the wallet's
+proving provider (or a proof server the wallet points at) from the witness
+outputs — which are already blinded by construction.
+
+## Public vs private state
+
+Public ledger state (anyone can read):
+
+- `trialId: Bytes<32>`
+- `sponsor: Opaque<"string">`
+- `enrollments: Counter`
+- `usedNullifiers: Set<Bytes<32>>`
+
+Private (browser only): age, biomarker, medicationX, country, pregnant,
+conditionY, participant seed. The only value derived from them that becomes
+public is `nullifier = H("zk-trial:nullifier:" || trialId || seed)`, which
+is domain- and trial-separated, so it cannot be correlated across trials and
+does not reveal the seed (preimage resistance).
+
+## Why reads don't need the wallet
+
+`fetchEnrollmentCount` queries the Preprod indexer directly
+(`queryContractState` + the generated `ledger()` accessor). The sponsor
+dashboard therefore works with no wallet installed and can never accidentally
+submit anything — its provider set throws on any proof/balance/submit call.
+
+## Local tests vs network
+
+- **Local** (what CI guarantees): `compact compile` reproduces committed
+  artifacts byte-for-byte; 35 Vitest contract tests exercise the real
+  compiled circuits via `@midnight-ntwrk/compact-runtime`; tsc, lint,
+  production build.
+- **Network** (requires 1AM Wallet): connect, deploy, enroll, finalization
+  on Preprod. These are driven manually through the UI; the app never
+  fabricates a network result.

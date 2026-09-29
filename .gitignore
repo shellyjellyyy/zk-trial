@@ -10,17 +10,28 @@ out/
 
 # production
 /build/
-/apps/*/build/
 /dist/
-
-# rust / soroban
-target/
-contracts/zk_trial/target/
 
 # env
 .env
 .env.local
 .env*.local
+
+# midnight
+# Deployment state written by the CLI: holds the contract address and active
+# network. It is local scratch, not a source artifact.
+.midnight-state.json
+*.local.json
+# Derived from managed/ by scripts/copy-zk-assets.mjs at build time.
+public/zk/
+
+# editor
+.vscode/
+.idea/
+test_snapshots/
+
+# hosting
+.vercel
 
 # misc
 .DS_Store
@@ -28,19 +39,3 @@ contracts/zk_trial/target/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# circuit ceremony intermediates (large/binary; final artifacts ARE committed)
-circuits/eligibility/build/pot12_0000.ptau
-circuits/eligibility/build/pot12_0001.ptau
-circuits/eligibility/build/pot12_final.ptau
-circuits/eligibility/build/eligibility_0000.zkey
-circuits/eligibility/build/witness*.wtns
-
-# deployment output (deployment/preprod.json IS committed: it records the public
-# contract id, not a secret. *.local.json holds per-deployer scratch data.)
-deployment/*.local.json
-
-# editor
-.vscode/
-.idea/
-test_snapshots/

@@ -1,0 +1,14 @@
+# Normalise line endings for text files so the repository is identical on
+# Windows, macOS and Linux (and so Compact/TypeScript output stays byte-stable).
+* text=auto eol=lf
+
+# Prover and verifier keys are opaque binary blobs.
+managed/zk-trial/keys/* binary
+
+# Anything else that is binary.
+*.wasm binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary

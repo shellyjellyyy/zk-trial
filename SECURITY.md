@@ -3,8 +3,8 @@
 ## What this project is
 
 zk-trial is a **research/demo prototype** built to demonstrate zero-knowledge
-clinical-trial eligibility matching for a Web3/ZK Level 4 submission. It uses
-**entirely synthetic health data**.
+clinical-trial eligibility matching on **Midnight Preprod** for a Web3/ZK
+Level 4 submission. It uses **entirely synthetic health data**.
 
 > **This is not a medical device, a clinical trial enrollment system, or a
 > substitute for professional medical advice.** Do not enter real personal
@@ -13,114 +13,139 @@ clinical-trial eligibility matching for a Web3/ZK Level 4 submission. It uses
 
 ## Data handling
 
-- All health values (age, biomarker, medication status, pregnancy status,
-  condition status) are **synthetic demo data**, entered directly in the
-  browser and used **only** as private inputs to a local ZK circuit
-  (`circuits/eligibility/eligibility.circom`).
-- Proof generation (`lib/zk/proof.ts`) runs client-side via WebAssembly
-  (snarkjs + the compiled circuit). Private inputs are never included in any
-  `fetch`/`XHR` call, are never written to `console.log`, and are never
-  placed in a URL, query string, or analytics event.
-- The only values that ever leave the browser during enrollment are: the
-  trial ID, the anonymous nullifier (see below), and a timestamp. You can
-  verify this yourself — the "Developer / debug" panel on the result screen
-  in the app shows the exact JSON payload that would be sent.
-- Nothing is written to browser `localStorage` except the participant's
-  random nullifier secret (`zk-trial:participant-secret`), which contains no
-  health information.
+- All health values (age, biomarker level, medication status, country,
+  pregnancy status, condition status) are **synthetic demo data**, entered
+  directly in the browser and used **only** as private witness inputs to the
+  Compact `enroll` circuit (`contracts/zk-trial.compact`, witness
+  implementations in `src/witnesses.ts`).
+- The witness functions run in the browser at proving time. Private inputs
+  are never included in any `fetch`/`XHR`/WebSocket call, are never written
+  to `console.log`, and are never placed in a URL, query string, or
+  analytics event.
+- The only value that ever leaves the browser during enrollment is the
+  **32-byte nullifier** the circuit returns (plus the counter increment the
+  circuit performs). You can audit this by reading `enroll` in
+  `contracts/zk-trial.compact` — it is 40 lines long.
+- Nothing health-related is written to browser storage. The participant
+  seed (see below) is held in memory for the session.
 
 ## What is public vs. private
 
-| Public (sponsor/chain can see)         | Private (never leaves the browser)         |
-|-----------------------------------------|---------------------------------------------|
-| Trial ID                                | Age                                          |
-| Eligible / not eligible (implicitly, via whether an enrollment tx exists) | Biomarker level |
-| Anonymous nullifier                     | Medication status                            |
-| Enrollment timestamp                    | Country (raw value; only equality is proven) |
-| Public enrollment counter               | Pregnancy status                             |
-| Trial config hash (on-chain)            | Condition Y status                           |
+| Public (sponsor/chain can see) | Private (never leaves the browser) |
+|---|---|
+| Trial ID (`TRIAL-001`) | Age |
+| Sponsor name | Biomarker level |
+| Eligible / not eligible (implicitly: whether an enrollment tx exists) | Medication status |
+| Anonymous nullifier (32 bytes) | Country (raw value; only equality is proven) |
+| Public enrollment counter | Pregnancy status |
+| Used-nullifier set | Condition Y status |
+| | Participant seed (32 bytes) |
 
 ## Anonymous nullifier: construction and limitations
 
-`nullifier = SHA256(participant_secret || trial_id)`, computed entirely
-client-side (`lib/privacy/nullifier.ts`). `participant_secret` is a random
-32-byte value generated in the browser and stored only in `localStorage`.
+The nullifier is derived **inside the circuit** from the private witness
+seed:
+
+```
+nullifier = persistentHash([ "zk-trial:nullifier:" , trialId , seed ])
+```
+
+The circuit discloses it (`disclose(...)`) and inserts it into the on-chain
+`usedNullifiers` set; a second attempt with the same seed + trial fails the
+`assert(!usedNullifiers.member(nul))`.
 
 **What this gives you:**
 - The same participant enrolling twice in the same trial produces the same
-  nullifier, so the contract can reject the duplicate.
+  nullifier, so the contract rejects the duplicate on-chain — this is not a
+  frontend policy but a ledger-state assertion.
 - The same participant across two different trials produces two *different*,
-  unlinkable nullifiers (trial ID is mixed into the hash).
-- The nullifier is computationally independent of all medical field values.
+  unlinkable nullifiers (the trial ID is a hash input; `tests/zk-trial.test.ts`
+  asserts cross-trial separation).
+- The nullifier is computed from the seed only, never from any medical
+  field: the eligibility inputs and the nullifier path share no values.
+- **Improvement over the previous iteration:** because derivation happens
+  inside the circuit, a prover cannot submit an arbitrary nullifier
+  alongside a valid proof — the circuit *returns* the nullifier; it is part
+  of the proof's public output.
 
-**Explicit limitations (read this before treating it as production-grade):**
-- This is a simple hash commitment, **not** a nullifier scheme cryptographically
-  bound to the ZK proof itself. A rigorous version (e.g. Semaphore/Tornado-style
-  designs) constrains nullifier derivation *inside* the circuit, so a prover
-  cannot submit an arbitrary/unrelated nullifier alongside a valid proof. This
-  MVP does not do that — the nullifier and the proof are generated
-  independently and only loosely bound by the frontend's control flow. A
-  malicious client could in principle submit a proof with any nullifier value.
-  Hardening this is a documented roadmap item, not a solved problem here.
-- If a participant clears `localStorage` or uses a different browser/device,
-  they receive a new secret and could enroll again. This is acceptable for a
-  demo; it is **not** a strong Sybil-resistance guarantee.
-- The contract's deduplication is only as good as the assumption that
-  nullifiers are honestly derived by the client shown in this repository.
+**Explicit limitations:**
+- The participant seed lives in browser memory for the session. Clearing it
+  (reload) yields a new identity, so a determined user could enroll again
+  from the same browser. This is acceptable for a demo; it is **not** strong
+  Sybil resistance.
+- The trial's nullifier set grows unbounded (fine at MVP scale).
+- Eligibility criteria themselves are intentionally public (they live in
+  `trials/trial-001.json`); only the participant's *values* are private.
 
-## Trusted setup (Groth16)
+## Proof system and keys
 
-The proving/verification keys under `circuits/eligibility/build/` were
-generated by a **local, single-contributor "ceremony"**
-(`scripts/setup-circuit-keys.sh`, using `snarkjs powersoftau` +
-`snarkjs zkey contribute`, run once on one machine). This is standard
-practice for a demo/hackathon circuit of this size, but it is **not** a
-multi-party ceremony and should not be trusted for any deployment handling
-real value or real medical claims. A production system would use a public,
-multi-party trusted setup (or a transparent proof system that needs none).
+- The circuits are compiled by the **Compact toolchain (0.31.1)**. The
+  prover key (`.prover`), verifier key (`.verifier`) and zkIR (`.bzkir`)
+  files under `managed/zk-trial/` are compiler outputs that reproduce
+  **byte-for-byte** from the committed source (CI recompiles and diffs), so
+  there is no separately-generated or hand-distributed key material to
+  audit. This project runs **no ceremony of its own**: unlike the previous
+  Circom/Groth16 iteration, there is no locally-generated powers-of-tau or
+  zkey with single-contributor toxic waste in this repository. The setup
+  properties of Midnight's underlying proof system are defined by the
+  protocol — see the Midnight documentation ("Compact as a privacy-first
+  language") for the authoritative statement rather than this file.
+- On deployment, the verifier keys are registered **on-chain** in the
+  contract state. When the app joins a contract it checks local verifier
+  keys against the deployed ones (`verifyContractState`) and refuses to
+  proceed on mismatch — you cannot talk to a contract compiled from
+  different source than you think you are.
+- The proof is generated by the 1AM wallet's proving provider (or an HTTP
+  proof server if configured) and **verified by the network as part of
+  transaction validation**: an invalid proof never produces a ledger
+  update. This is a Midnight protocol property, not app-level logic.
 
 ## Smart contract assumptions
 
-- `contracts/zk_trial` stores **no medical information** — see the doc
-  comment at the top of `src/lib.rs` for the exact on-chain data model
-  (trial ID, config hash, enrollment count, nullifier → timestamp map).
-- `record_enrollment` performs **no cryptographic proof verification**. It
-  trusts that the caller already generated and verified a valid ZK proof
-  off-chain before submitting the transaction. This is a deliberate MVP
-  architecture decision, documented up front in `docs/ARCHITECTURE.md` — the
-  contract is the public attestation/counter layer, not the ZK verifier. Do
-  not describe this project as doing "on-chain ZK verification"; it does not.
-- `initialize_trial` is admin-gated (`init_admin` sets a single admin
-  address). There is no multi-admin, timelock, or governance mechanism.
-- Nothing prevents a participant from generating a *valid* eligibility proof
-  and then choosing not to submit an enrollment transaction, or from
-  submitting an enrollment transaction that isn't backed by a proof the
-  contract itself checked (see above). In a hackathon MVP this trust
-  boundary sits in the frontend, not the chain.
+- `contracts/zk-trial.compact` stores **no medical information**. Its public
+  ledger state is exactly: `trialId`, `sponsor`, `enrollments: Counter`,
+  `usedNullifiers: Set<Bytes<32>>`.
+- Every eligibility rule is a circuit `assert`: an ineligible input makes
+  the constraint system unsatisfiable, so no proof (and therefore no
+  transaction) can exist. There is no "front-end checked, contract trusted"
+  gap for the criteria themselves.
+- The constructor args (`TRIAL-001`, sponsor name) are `disclose`d —
+  deliberately public.
+- There is no admin, upgrade, or pause mechanism in this MVP contract. The
+  maintenance signing key generated at deploy time exists only because the
+  protocol tracks a contract maintenance authority; it is derived locally
+  in the deploy panel and never leaves the browser.
+- Nothing prevents a participant from generating a valid proof and then
+  choosing not to submit it (proofs are non-mandatory). Enrollment is
+  opt-in.
 
 ## Threat model summary
 
 **In scope / defended against:**
 - A sponsor or on-chain observer learning any participant's age, biomarker,
-  medication, pregnancy, or condition values.
-- A sponsor linking two different trials' enrollments to the same person via
-  the nullifier.
-- A participant enrolling twice in the same trial using the same browser
-  secret.
-- A tampered proof or tampered public signal being accepted as valid (see
-  `tests/zk/eligibility.test.mjs`).
-- Ineligible synthetic profiles being able to generate any proof at all.
+  medication, pregnancy, country, or condition values.
+- An observer linking two trials' enrollments to the same participant via
+  nullifiers (trial-separated hash inputs).
+- A participant enrolling twice in the same trial with the same seed
+  (on-chain set assertion).
+- A prover submitting a nullifier not derived from its witness (the circuit
+  computes it).
+- An ineligible profile producing any accepted enrollment (circuit asserts).
+- Connecting to a contract whose on-chain verifier keys differ from the
+  locally compiled ones (join-time check).
+- The app reporting success without a finalized, succeeding transaction
+  (the UI checks finalization status and surfaces failures).
 
 **Out of scope / not defended against (documented, not hidden):**
-- A participant using multiple browsers/devices/cleared storage to bypass
-  deduplication.
-- A malicious or modified frontend submitting an enrollment nullifier not
-  actually derived from a genuine proof (no in-circuit binding — see above).
-- Formal verification of the Circom circuit or the Rust contract.
-- Front-running, MEV, or transaction-ordering concerns on submission.
+- Sybil: a participant with fresh browser state gets a fresh identity.
+- Confidentiality of the trial criteria (intentionally public).
+- Formal verification of the Compact circuit.
+- Front-running/MEV-style concerns around submission (mitigated by the
+  network's design but not analyzed here).
+- Security of the 1AM wallet extension or ProofStation themselves (third
+  party; see 1AM's own docs).
 - Any real-world identity, KYC, or regulatory compliance process.
-- Confidentiality of the trial criteria themselves (they are intentionally
-  public, human-readable JSON).
+- DoS on the Preprod indexer or proof service.
 
 ## Reporting
 

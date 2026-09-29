@@ -1,0 +1,45 @@
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+export ledger trialId: Bytes<32>;
+export ledger sponsor: Opaque<"string">;
+export ledger enrollments: Counter;
+export ledger usedNullifiers: Set<Bytes<32>>;
+
+constructor(id: Bytes<32>, name: Opaque<"string">) {
+  trialId = disclose(id);
+  sponsor = disclose(name);
+}
+
+witness eligibility(): [Uint<8>, Uint<8>, Boolean, Uint<16>, Boolean, Boolean, Bytes<32>];
+
+circuit nullifier(seed: Bytes<32>, trial: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([pad(32, "zk-trial:nullifier:"), trial, seed]);
+}
+
+export circuit enroll(): Bytes<32> {
+  const [age, biomarker, medicationX, country, pregnant, conditionY, seed] = eligibility();
+
+  assert(age >= 18, "Age below the minimum of 18");
+  assert(age <= 65, "Age above the maximum of 65");
+  assert(biomarker >= 40, "Biomarker below the minimum of 40");
+  assert(biomarker <= 80, "Biomarker above the maximum of 80");
+  assert(medicationX, "Medication X is not being taken");
+  assert(country == 356, "Resident country is not India");
+  assert(!pregnant, "Pregnant participants are excluded");
+  assert(!conditionY, "Excluded condition is present");
+
+  const nul = disclose(nullifier(seed, trialId));
+
+  assert(!usedNullifiers.member(nul), "Already enrolled in this trial");
+
+  usedNullifiers.insert(nul);
+  enrollments.increment(1);
+
+  return nul;
+}
+
+export circuit getEnrollmentCount(): Uint<64> {
+  return enrollments.read();
+}

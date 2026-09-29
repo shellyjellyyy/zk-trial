@@ -2,27 +2,58 @@
   "name": "zk-trial",
   "version": "0.1.0",
   "private": true,
-  "description": "zk-trial: private clinical trial eligibility matching using zero-knowledge proofs (research/demo MVP, synthetic data only)",
-  "workspaces": [
-    "apps/web"
-  ],
+  "description": "zk-trial: private clinical trial eligibility matching on Midnight using Compact zero-knowledge proofs (synthetic demo data only)",
   "scripts": {
-    "dev": "npm run dev --workspace apps/web",
-    "build": "npm run build --workspace apps/web",
-    "start": "npm run start --workspace apps/web",
-    "lint": "npm run lint --workspace apps/web",
-    "typecheck": "npm run typecheck --workspace apps/web",
-    "test": "npm run zk:test && npm run contract:test",
-    "zk:compile": "bash scripts/compile-circuit.sh",
-    "zk:setup": "bash scripts/setup-circuit-keys.sh",
-    "zk:test": "node --test --test-force-exit \"tests/zk/*.test.mjs\" \"tests/lib/*.test.mjs\"",
-    "contract:build": "cd contracts/zk_trial && cargo build --target wasm32v1-none --release",
-    "contract:test": "cd contracts/zk_trial && cargo test",
-    "deploy": "bash scripts/deploy-preprod.sh",
-    "check:files": "node scripts/check-required-files.mjs"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "contract:test": "vitest run tests/zk-trial.test.ts",
+    "compact:compile": "compact compile +0.31.1 contracts/zk-trial.compact managed/zk-trial",
+    "compact:format": "compact format --check contracts/",
+    "copy:zk-assets": "node scripts/copy-zk-assets.mjs",
+    "predev": "node scripts/copy-zk-assets.mjs",
+    "postinstall": "node scripts/fix-midnight-exports.mjs",
+    "prebuild": "node scripts/copy-zk-assets.mjs"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/dapp-connector-api": "4.0.1",
+    "@midnight-ntwrk/onchain-runtime-v3": "3.0.0",
+    "@midnight-ntwrk/midnight-js": "4.1.1",
+    "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "4.1.1",
+    "next": "15.5.26",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
-    "circomlib": "2.0.5",
-    "snarkjs": "0.7.5"
-  }
+    "@types/node": "20.14.15",
+    "@types/react": "18.3.11",
+    "@types/react-dom": "18.3.1",
+    "autoprefixer": "10.4.20",
+    "eslint": "8.57.1",
+    "eslint-config-next": "15.5.26",
+    "postcss": "8.4.47",
+    "tailwindcss": "3.4.13",
+    "typescript": "5.6.3",
+    "vitest": "2.1.9"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "browserslist": [
+    "> 0.3%",
+    "not dead",
+    "not op_mini all",
+    "chrome >= 80",
+    "firefox >= 78",
+    "safari >= 14",
+    "edge >= 80"
+  ]
 }
