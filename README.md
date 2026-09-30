@@ -23,7 +23,7 @@ ledger sees only an anonymous, trial-scoped nullifier and a counter.
 | **Wallet** | [1AM Wallet](https://1am.xyz) (Chrome extension) |
 | **Stack** | Compact · Midnight.js · 1AM Wallet · Next.js · TypeScript |
 | **Repository** | https://github.com/shellyjellyyy/zk-trial |
-| **Product X profile** | https://x.com/shellyjelllyyyy |
+| **Product X profile** | [https://x.com/zktrialapp](https://x.com/zktrialapp) |
 
 [![CI](https://github.com/shellyjellyyy/zk-trial/actions/workflows/ci.yml/badge.svg)](https://github.com/shellyjellyyy/zk-trial/actions/workflows/ci.yml)
 
@@ -512,9 +512,9 @@ to read the public enrollment count without a wallet.
 
 ## Product X Profile
 
-Project profile on X: **https://x.com/shellyjelllyyyy**
+Project profile on X: **[https://x.com/zktrialapp](https://x.com/zktrialapp)**
 
-Launch post: https://x.com/shellyjelllyyyy/status/2105060189300986082
+Launch post: [https://x.com/zktrialapp/status/2105247029408747869](https://x.com/zktrialapp/status/2105247029408747869)
 
 The prepared profile copy, launch post, and posting checklist are in
 [`docs/PRODUCT_X_SETUP.md`](./docs/PRODUCT_X_SETUP.md).
