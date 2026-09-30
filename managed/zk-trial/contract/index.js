@@ -96,7 +96,7 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('enroll',
                                      'argument 1 (as invoked from Typescript)',
-                                     'zk-trial.compact line 21 char 1',
+                                     'zk-trial.compact line 65 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
@@ -119,7 +119,7 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('getEnrollmentCount',
                                      'argument 1 (as invoked from Typescript)',
-                                     'zk-trial.compact line 43 char 1',
+                                     'zk-trial.compact line 87 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
@@ -166,7 +166,7 @@ export class Contract {
     if (!(id_0.buffer instanceof ArrayBuffer && id_0.BYTES_PER_ELEMENT === 1 && id_0.length === 32)) {
       __compactRuntime.typeError('Contract state constructor',
                                  'argument 1 (argument 2 as invoked from Typescript)',
-                                 'zk-trial.compact line 10 char 1',
+                                 'zk-trial.compact line 54 char 1',
                                  'Bytes<32>',
                                  id_0)
     }
@@ -265,7 +265,7 @@ export class Contract {
     if (!(Array.isArray(result_0) && result_0.length === 7  && typeof(result_0[0]) === 'bigint' && result_0[0] >= 0n && result_0[0] <= 255n && typeof(result_0[1]) === 'bigint' && result_0[1] >= 0n && result_0[1] <= 255n && typeof(result_0[2]) === 'boolean' && typeof(result_0[3]) === 'bigint' && result_0[3] >= 0n && result_0[3] <= 65535n && typeof(result_0[4]) === 'boolean' && typeof(result_0[5]) === 'boolean' && result_0[6].buffer instanceof ArrayBuffer && result_0[6].BYTES_PER_ELEMENT === 1 && result_0[6].length === 32)) {
       __compactRuntime.typeError('eligibility',
                                  'return value',
-                                 'zk-trial.compact line 15 char 1',
+                                 'zk-trial.compact line 59 char 1',
                                  '[Uint<0..256>, Uint<0..256>, Boolean, Uint<0..65536>, Boolean, Boolean, Bytes<32>]',
                                  result_0)
     }
@@ -489,7 +489,7 @@ export function ledger(stateOrChargedState) {
         if (!(elem_0.buffer instanceof ArrayBuffer && elem_0.BYTES_PER_ELEMENT === 1 && elem_0.length === 32)) {
           __compactRuntime.typeError('member',
                                      'argument 1',
-                                     'zk-trial.compact line 8 char 1',
+                                     'zk-trial.compact line 52 char 1',
                                      'Bytes<32>',
                                      elem_0)
         }
