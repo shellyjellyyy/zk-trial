@@ -40,6 +40,27 @@ see it, and it cannot be un-disclosed.
 
 This is a privacy problem, not a matching problem.
 
+## What This Product Does
+
+zk-trial is a privacy-preserving clinical-trial eligibility verifier. A
+participant uses it to:
+
+1. **Pick a trial** — open `TRIAL-001` and read its public inclusion/exclusion
+   criteria.
+2. **Enter their private health profile** — age, biomarker level, medication
+   status, country, pregnancy status, and condition status. These values stay
+   in the browser as witness inputs.
+3. **Prove eligibility** — a single zero-knowledge proof shows the profile
+   satisfies *every* rule at once. An ineligible profile yields no proof, so
+   nothing is ever submitted and the sponsor never learns which criterion
+   failed.
+4. **Enroll anonymously** — on acceptance, one transaction increments a public
+   counter and records a 32-byte trial-scoped nullifier.
+5. **Give the sponsor a public dashboard** — a wallet-free view of live,
+   aggregate enrollment state read from the chain.
+
+In one line: **prove you qualify without exposing a single health value.**
+
 ## Solution
 
 zk-trial lets a participant prove, with a **single zero-knowledge proof**,
@@ -97,7 +118,31 @@ For the synthetic trial `TRIAL-001`:
 real sponsor, no real biomarker, and no real patients. They exist to
 demonstrate the privacy flow end to end.
 
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| ZK circuit | **Compact** (`contracts/zk-trial.compact`, toolchain 0.31.1) |
+| Blockchain SDK | **Midnight.js** 4.1.1 (`@midnight-ntwrk/midnight-js`) |
+| Network | **Midnight Preprod** |
+| Wallet / signer | **1AM Wallet** (Chrome extension, DApp Connector API) |
+| Language | **TypeScript** |
+| Framework | **Next.js** (App Router) |
+| Tests | **Vitest** (37 tests) |
+| Lint / types | **ESLint** (`next lint`), **TypeScript** `tsc --noEmit` |
+| CI/CD | **GitHub Actions** |
+| Hosting | **Vercel** |
+
+All transactions are built, proven, balanced, and submitted from the browser
+through the connected 1AM Wallet. There is no server-side signer.
+
 ## Privacy Model
+
+The privacy boundary is enforced by the circuit, not by application logic. The
+same Compact circuit that defines the public ledger state also defines what
+must remain provable-but-unstated. The full model is documented at the top of
+[`contracts/zk-trial.compact`](./contracts/zk-trial.compact) and in
+[`SECURITY.md`](./SECURITY.md).
 
 | Value | In browser | On-chain | Visible to sponsor |
 |---|:---:|:---:|:---:|
@@ -207,7 +252,7 @@ authoritative description of Midnight's protocol-level guarantees, see the
 
 https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app
 
-## 🎥 Demo
+## Demo Video
 
 Watch the full walkthrough of the enrollment flow, the sponsor dashboard, and
 the proving pipeline:
@@ -218,9 +263,32 @@ Open **Trials → TRIAL-001** to run the enrollment flow (requires the 1AM
 Wallet extension on Midnight Preprod), or open **Sponsor Dashboard** to see
 the public enrollment count read live from chain state — no wallet needed.
 
-Screenshots of the running app (landing page, connected-wallet enrollment,
-confirmed transaction, sponsor dashboard) are prepared for the submission
-and will be added under `docs/screenshots/`.
+Screenshots of the running app are committed under
+[`docs/screenshots/`](./docs/screenshots/): landing page, eligibility form with
+1AM Wallet connected, confirmed enrollment transaction, and the sponsor
+dashboard. See [`docs/EVIDENCE_CHECKLIST.md`](./docs/EVIDENCE_CHECKLIST.md).
+
+## Prerequisites
+
+| What | Why | Where |
+|---|---|---|
+| Node.js ≥ 22 | build and run the app | https://nodejs.org |
+| npm | dependency install | bundled with Node.js |
+| 1AM Wallet (Chrome extension) | connect, prove, balance, sign, submit | https://1am.xyz |
+| Midnight **Preprod** selected in 1AM | the app refuses any other network | 1AM settings |
+| Compact devtools + toolchain 0.31.1 | only to recompile the contract | https://docs.midnight.network |
+
+No NIGHT or DUST is required: 1AM's ProofStation sponsors proving and fees, so
+the demo runs without funding a wallet.
+
+> **Wallet:** this project uses **1AM Wallet**, Midnight's own browser
+> extension, and that is what the code integrates. There is no Lace, Freighter,
+> or other wallet adapter in this repository.
+
+The Compact CLI is only needed if you change the contract. Running the app and
+completing the enrollment flow needs nothing beyond Node.js and 1AM Wallet,
+because the compiled ZK artifacts are committed under `managed/` and copied
+into `public/zk` automatically at build time.
 
 ## Network
 
@@ -229,18 +297,40 @@ module load (`src/midnight/config.ts`) and refuses a wallet connected to any
 other network. Public indexer:
 `https://indexer.preprod.midnight.network/api/v4/graphql`.
 
-## Contract
+## Contract Address
 
-Deployed zk-trial Compact contract on Midnight Preprod:
+The zk-trial Compact contract deployed on **Midnight Preprod**:
 
 ```
 dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3
 ```
 
-The address is injected to the app via `NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS`
-(see [Environment Variables](#environment-variables)). The contract was
-deployed through the in-app sponsor deploy panel with 1AM Wallet; no CLI
-deployment script is required.
+- **Network:** Midnight Preprod
+- **Public indexer:** `https://indexer.preprod.midnight.network/api/v4/graphql`
+- **Public ledger state:** `trialId`, `sponsor`, `enrollments` (Counter),
+  `usedNullifiers` (`Set<Bytes<32>>`)
+
+The address is baked into the production build via
+`NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS` (see
+[Environment Variables](#environment-variables)) and is what the live
+[deployment](#live-demo) reads. It was deployed through the in-app sponsor
+deploy panel with 1AM Wallet; no CLI deployment script was used.
+
+You can confirm the contract exists independently of this repository by
+querying the Preprod indexer directly:
+
+```graphql
+query {
+  contractAction(address: "dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3") {
+    __typename
+  }
+}
+```
+
+A deployed contract returns `{"data":{"contractAction":{"__typename":"ContractCall"}}}`.
+
+> The contract's public state contains **no health data**. See
+> [Privacy Model](#privacy-model).
 
 ## Wallet
 
@@ -264,17 +354,27 @@ enrollment counter incremented. No participant information is attached to or
 derivable from this section — the transaction's public content is the
 anonymous nullifier and the counter increment.
 
-## Local Setup
+## Setup & Run Locally
 
-Prerequisites: Node.js ≥ 22, npm.
+Prerequisites: Node.js ≥ 22 and npm. See [Prerequisites](#prerequisites) for
+the wallet requirement.
 
 ```bash
 git clone https://github.com/shellyjellyyy/zk-trial
 cd zk-trial
 npm install          # postinstall normalizes Midnight exports maps
-npm test             # 37 contract/identity tests
+cp .env.example .env.local   # then set the contract address below
 npm run dev          # http://localhost:3000
 ```
+
+Set the deployed contract address in `.env.local` so the app can join it:
+
+```bash
+NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS=dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3
+```
+
+Without it the app still runs and shows an honest "not deployed yet" state
+rather than inventing an address.
 
 All scripts that exist in `package.json`:
 
@@ -313,13 +413,24 @@ network endpoints are public information). There is no secret in this
 project: no `PRIVATE_KEY`, seed, or mnemonic exists anywhere, because
 signing and proving happen in the participant's own wallet.
 
-## Testing
+## Run Tests
 
 The full suite is green: **37/37 tests passing**.
 
 ```bash
 npm test
 ```
+
+Other verification commands used by this project and by CI:
+
+| Command | What it does |
+|---|---|
+| `npm run test:watch` | Vitest in watch mode |
+| `npm run contract:test` | the Compact contract tests only |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint (`next lint`) |
+| `npm run build` | production build |
+| `npm run compact:compile` | recompile the contract → `managed/` (needs the Compact CLI) |
 
 Coverage highlights (`tests/zk-trial.test.ts`, 35 contract tests + a
 2-test runtime-identity regression suite):
@@ -357,7 +468,39 @@ and pull request:
 7. `npm run lint`
 8. `npm run build`
 
-Badged above — it is the repository's real workflow, not a decoration.
+Badged at the top of this file — it is the repository's real workflow, not a
+decoration. The artifact-drift check on step 4 is the important one: it proves
+the committed `managed/` keys and zkIR were produced by the committed
+`.compact` source, rather than being hand-edited or drifted.
+
+## Usage Guide
+
+The complete step-by-step guide is [`docs/USAGE.md`](./docs/USAGE.md). It
+covers prerequisites, local setup, environment configuration, running
+locally, connecting the 1AM Wallet, running the eligibility flow, enrollment
+and its confirmation evidence, what stays public versus private, the sponsor
+dashboard, and troubleshooting.
+
+Short version:
+
+```bash
+npm install
+cp .env.example .env.local   # set NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS
+npm run dev                  # http://localhost:3000
+```
+
+Then open `/trials/TRIAL-001`, connect 1AM Wallet, fill in **synthetic**
+values, and click **Prove eligibility and enroll anonymously**. Open `/sponsor`
+to read the public enrollment count without a wallet.
+
+## Product X Profile
+
+Project profile on X: **https://x.com/shellyjelllyyyy**
+
+Launch post: https://x.com/shellyjelllyyyy/status/2105060189300986082
+
+The prepared profile copy, launch post, and posting checklist are in
+[`docs/PRODUCT_X_SETUP.md`](./docs/PRODUCT_X_SETUP.md).
 
 ## Deployment
 
@@ -425,15 +568,6 @@ Summary (full version in [`SECURITY.md`](./SECURITY.md)):
   enrollments (acceptable at demo scale).
 - **Eligibility criteria are public** (they live in `trials/trial-001.json`);
   only the participant's values are private.
-
-## Product X
-
-The project announcement post is live on X:
-https://x.com/shellyjelllyyyy/status/2105060189300986082
-
-A dedicated Product X profile, if created, will be linked there as well.
-The prepared profile copy, launch post, and setup checklist are in
-[`docs/PRODUCT_X_SETUP.md`](./docs/PRODUCT_X_SETUP.md).
 
 ## Repository
 

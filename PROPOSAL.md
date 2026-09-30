@@ -80,15 +80,16 @@ happen — never before.
 - Live demo: https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app
 - Deployed contract (Midnight Preprod):
   `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3`
-- 18 meaningful commits covering: Compact privacy core, contract test
+- Development history covering: Compact privacy core, contract test
   coverage, removal of the legacy prototype stack, Midnight.js provider
   stack, 1AM Wallet integration, UI rewrite, Preprod configuration,
   real deployment + enrollment, CI, and docs.
 
 ## Public announcement
 
-The project announcement post is live on X:
-https://x.com/shellyjelllyyyy/status/2105060189300986082
+Project profile on X: https://x.com/shellyjelllyyyy
+
+Announcement post: https://x.com/shellyjelllyyyy/status/2105060189300986082
 
 ## Real network evidence
 
@@ -101,11 +102,12 @@ https://x.com/shellyjelllyyyy/status/2105060189300986082
 
 ## What remains manual (honest list)
 
-- ~~Product X launch post~~ **published**:
-  https://x.com/shellyjelllyyyy/status/2105060189300986082
-- **Demo video** (optional polish; script ready in `docs/DEMO_SCRIPT.md`).
-- Evidence screenshots for the submission form (four core shots captured;
-  checklist in `docs/EVIDENCE_CHECKLIST.md`).
+- Final submission-form entry (repository, live demo, video, screenshot links).
+
+Everything else is complete: the Product X profile and launch post are
+published, the demo video is recorded
+(`https://www.loom.com/share/1edb951a957a4dc097ee4c3293619d58`), and four
+evidence screenshots are committed under `docs/screenshots/`.
 
 ## License
 

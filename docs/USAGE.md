@@ -7,15 +7,23 @@ contract; no Stellar/Soroban/Circom/snarkjs code exists in this project.
 
 ## 0. Production deployment (live)
 
-A production deployment is live and pointed at a real deployed contract:
+A live Vercel deployment is running and connected to the real deployed
+contract:
 
 | | |
 |---|---|
-| URL | https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app |
+| URL | https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app/ |
 | Network | Midnight Preprod |
 | Contract | `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3` |
 
+Live URL: **https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app/**
+
 The steps below describe running the same flow locally.
+
+> Note: the sponsor dashboard is a client-side React component, so a plain
+> `curl` of `/sponsor` returns the server-rendered shell, which renders the
+> empty local fallback. The contract address is baked in at build time and
+> resolves in the browser. Open the page in a browser to see live state.
 
 ## 1. Prerequisites
 
@@ -45,8 +53,10 @@ them at `/zk/keys/*` and `/zk/zkir/*` (the build does this automatically via
 ## 3. Deploy the contract (one-time, sponsor action)
 
 1. Open **Sponsor Dashboard** (`/sponsor`).
-2. You will see an honest "not deployed yet" notice plus the
-   **Deploy the zk-trial contract** panel.
+2. If the page shows the deploy panel, the build has no contract address
+   configured yet (normal for a fresh local checkout). On the live deployment
+   this panel is absent because the address is baked in, and the dashboard
+   reads live state directly.
 3. Click **Connect 1AM Wallet and deploy**.
 4. Approve the connection in the 1AM popup (the wallet must be on
    **preprod** — the app verifies this and errors clearly otherwise).
@@ -118,7 +128,28 @@ The panel at the bottom states exactly what the sponsor can and cannot see.
 The dashboard shows nothing rather than a mocked number when the contract is
 not deployed.
 
-## 6. What never leaves your browser
+## 6. What is public and what stays private
+
+### What is publicly visible on Midnight Preprod
+
+- the **trial ID** (`TRIAL-001`) and the **sponsor name**
+- the **enrollment counter** (`enrollments`)
+- the **used-nullifier set** (`usedNullifiers`) — the set of 32-byte anonymous
+  identifiers already spent on this trial
+- contract and network metadata (contract address, indexer endpoint)
+
+### What stays private
+
+- `age`, `biomarker`, `medicationX`, `country`, `pregnant`, `conditionY`
+- the participant `seed`
+- which criterion a rejected candidate failed (a rejected candidate produces no
+  transaction at all)
+
+The same split is documented at the top of
+[`contracts/zk-trial.compact`](../contracts/zk-trial.compact) and in the
+README [Privacy Model](../README.md#privacy-model) table.
+
+### What never leaves your browser
 
 The form values are witness inputs read only by the `eligibility` witness in
 `src/witnesses.ts` at proving time. They are never `fetch()`ed, logged,
@@ -151,7 +182,8 @@ so always commit regenerated artifacts together with the `.compact` change.
 |---|---|
 | "1AM Wallet not detected…" | Install/unlock 1AM and reload |
 | "1AM Wallet is connected to X but zk-trial targets preprod" | Switch the network in 1AM settings, reconnect |
-| "No zk-trial contract address is configured" | Deploy via the sponsor dashboard, then set `NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS` |
+| "No zk-trial contract address is configured" | The build has no address. Set `NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS` in `.env.local`, or deploy via the sponsor dashboard |
+| `curl` of `/sponsor` shows "Not deployed yet" | Expected — it is a client component, so the server-rendered shell shows the local fallback. Open it in a browser to see live state |
 | "Expected ZK artifact, but received text/html" | `/zk/` assets not served — run `npm run copy:zk-assets` and restart dev |
 | "Enrollment transaction was finalized with status FailEntirely" | The guaranteed segment failed (e.g. duplicate nullifier); nothing was recorded |
 | Verifier key mismatch on join | `managed/` no longer matches the deployed contract — recompile or redeploy |

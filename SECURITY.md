@@ -105,7 +105,7 @@ The circuit discloses it (`disclose(...)`) and inserts it into the on-chain
 
 - `contracts/zk-trial.compact` stores **no medical information**. Its public
   ledger state is exactly: `trialId`, `sponsor`, `enrollments: Counter`,
-  `  usedNullifiers: Set<Bytes<32>>`. Its deployed address on Midnight Preprod
+  `usedNullifiers: Set<Bytes<32>>`. Its deployed address on Midnight Preprod
   is `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3`.
 - Every eligibility rule is a circuit `assert`: an ineligible input makes
   the constraint system unsatisfiable, so no proof (and therefore no
@@ -151,5 +151,11 @@ The circuit discloses it (`disclose(...)`) and inserts it into the on-chain
 
 ## Reporting
 
-This is a student/hackathon MVP with no production deployment. If you find
-an issue while reviewing it, please open a GitHub issue on the repository.
+This is a student/hackathon MVP deployed to a public preview URL on Vercel
+(https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app/). It is **not** a
+production system: it runs on Midnight **Preprod**, a test network, handles
+only synthetic data, and has no audit, monitoring, or incident-response
+process. A public URL does not make it production-ready.
+
+If you find an issue while reviewing it, please open a GitHub issue on the
+repository.

@@ -1,11 +1,12 @@
 # Product X Setup
 
-> **Status: the announcement post is live:**
-> https://x.com/shellyjelllyyyy/status/2105060189300986082
+> **Status: the project profile and announcement post are live.**
 >
-> A dedicated Product X **profile** has not been verified as existing; the
-> remaining optional steps below cover creating/polishing a profile and
-> pinning the announcement. Nothing in the submission depends on them.
+> Profile: https://x.com/shellyjelllyyyy
+> Announcement post: https://x.com/shellyjelllyyyy/status/2105060189300986082
+>
+> Both are linked from `README.md`. The copy and checklist below record what was
+> published and is kept as reference for future posts.
 
 ## 1. Suggested profile bio (≤ 160 chars)
 

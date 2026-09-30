@@ -1,3 +1,47 @@
+// =============================================================================
+// zk-trial — privacy model
+// =============================================================================
+//
+// A participant proves that a PRIVATE health profile satisfies every inclusion
+// and exclusion rule of a clinical trial, without revealing a single value.
+// Everything below is deliberately split into what the public ledger records
+// and what stays private to the prover.
+//
+// PUBLIC LEDGER STATE (visible to anyone, including the trial sponsor)
+//   trialId         — Bytes<32>, the trial this contract serves (disclosed)
+//   sponsor         — Opaque<"string">, the sponsor name (disclosed)
+//   enrollments     — Counter, the number of accepted enrollments so far
+//   usedNullifiers  — Set<Bytes<32>>, the anonymous nullifiers already spent,
+//                     used to reject a repeated enrollment for this trial
+//
+// PRIVATE WITNESSES (exist only as witness inputs in the participant's browser;
+// never written to public state and never transmitted off-device)
+//   age        Uint<8>    age in years
+//   biomarker  Uint<8>    biomarker A level
+//   medicationX Boolean   currently taking Medication X
+//   country    Uint<16>   ISO-3166 numeric country code (356 = India)
+//   pregnant   Boolean   currently pregnant
+//   conditionY Boolean   diagnosed with Condition Y
+//   seed       Bytes<32>  participant secret seed, generated per session; used
+//                         only to derive the trial-scoped nullifier
+//
+// HOW THE BOUNDARY IS ENFORCED
+//   Every eligibility rule below is a circuit `assert`, not frontend logic. An
+//   ineligible input makes the constraint system unsatisfiable, so no proof and
+//   therefore no transaction can exist for it.
+//
+//   disclose() is used ONLY for values intentionally made public: the two
+//   constructor arguments (trialId, sponsor) and the derived nullifier that is
+//   published as an anonymous, trial-scoped identifier. No eligibility input
+//   and no participant seed is ever passed to disclose().
+//
+//   The nullifier is computed inside the circuit from a domain-separated
+//   hash of the trial id and the private seed, so a prover cannot substitute an
+//   arbitrary one.
+//
+// Full rationale, threat model, and limitations: SECURITY.md
+// =============================================================================
+
 pragma language_version 0.23;
 
 import CompactStandardLibrary;
