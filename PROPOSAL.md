@@ -85,6 +85,11 @@ happen — never before.
   stack, 1AM Wallet integration, UI rewrite, Preprod configuration,
   real deployment + enrollment, CI, and docs.
 
+## Public announcement
+
+The project announcement post is live on X:
+https://x.com/shellyjelllyyyy/status/2105060189300986082
+
 ## Real network evidence
 
 | Artifact | Value |
@@ -96,10 +101,11 @@ happen — never before.
 
 ## What remains manual (honest list)
 
-- **Product X profile + launch post** (needs the owner's account; prepared
-  copy in `docs/PRODUCT_X_SETUP.md`).
-- **Demo video** (needs a screen recorder + the owner's wallet; script in
-  `docs/DEMO_SCRIPT.md`).
+- ~~Product X launch post~~ **published**:
+  https://x.com/shellyjelllyyyy/status/2105060189300986082
+- **Demo video** (optional polish; script ready in `docs/DEMO_SCRIPT.md`).
+- Evidence screenshots for the submission form (four core shots captured;
+  checklist in `docs/EVIDENCE_CHECKLIST.md`).
 
 ## License
 

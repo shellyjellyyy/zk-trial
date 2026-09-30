@@ -50,9 +50,12 @@ export const NETWORK_ENDPOINTS = PUBLIC_INDEXERS[NETWORK] ?? PUBLIC_INDEXERS.pre
 /**
  * Contract address of the deployed zk-trial Compact contract on Preprod.
  *
- * EMPTY until a real deployment is recorded. The UI renders an honest
- * "not deployed yet" state instead of inventing an address; after deploying
- * through 1AM Wallet the deploy flow writes the real value here.
+ * EMPTY by default: production (Vercel) injects the real address via
+ * NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS —
+ * dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3 — while a
+ * fresh local checkout without configuration renders an honest "not deployed
+ * yet" state instead of inventing an address. After deploying through 1AM
+ * Wallet, the deploy flow writes the real value here (and/or to the env var).
  */
 export const DEPLOYED_CONTRACT_ADDRESS = "";
 

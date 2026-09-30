@@ -1,5 +1,11 @@
 # Evidence Screenshot Checklist
 
+**Status:** the four core shots — #1 landing, #2 eligibility form (with 1AM
+Wallet connected), #4 enrollment confirmation, #6 sponsor dashboard — have
+been captured for the submission. The remaining shots are optional extras;
+if you want them referenced from the README, commit them under
+`docs/screenshots/` with the file names below.
+
 Capture order matches the Rise In submission flow. Save as PNG, name them as
 below, and redact where indicated before uploading anywhere public.
 
@@ -17,7 +23,7 @@ General rules:
 | 3 | `03-wallet-connected.png` | 1AM Wallet connected state | Real 1AM Wallet integration over the DApp Connector | "1AM Wallet connected" state in the app (and the 1AM popup if convenient); Preprod network label | wallet address, balances, recovery-phrase screens (never) |
 | 4 | `04-enrollment-confirmation.png` | Confirmed enrollment card | End-to-end enrollment succeeded | Confirmed card: anonymous ID (nullifier), tx id, block height, enrollment count | none required — nullifier is pseudonymous; keep as-is |
 | 5 | `05-tx-block-height.png` | Zoom on transaction id + block height | A real finalized Preprod transaction | Full tx id `00f78951…bb18` and the block height figure | nothing else in frame |
-| 6 | `06-sponsor-dashboard.png` | `/sponsor` | Sponsor reads live public state without a wallet | Verified enrollments count (2), contract/indexer rows, the "what the sponsor can/cannot see" panel | your wallet must NOT be connected for this shot — that is the point |
+| 6 | `06-sponsor-dashboard.png` | `/sponsor` | Sponsor reads live public state without a wallet | Verified enrollments count (the live on-chain value), contract/indexer rows, the "what the sponsor can/cannot see" panel | your wallet must NOT be connected for this shot — that is the point |
 | 7 | `07-github-repo.png` | GitHub repo main page | Public repository, clean history | Repo name `shellyjellyyy/zk-trial`, public badge, latest commit | personal GitHub dashboards/notifications |
 | 8 | `08-github-actions.png` | Actions tab, latest green run on `main` | CI green: compile+artifact-diff, tests, typecheck, lint, build | The green check on `main`, workflow name, step list | none |
 | 9 | `09-readme.png` | README rendered on GitHub | Submission-quality docs with real values | Header table (live demo, contract, network, wallet) and the privacy-model table | none |

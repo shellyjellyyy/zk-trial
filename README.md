@@ -22,7 +22,7 @@ ledger sees only an anonymous, trial-scoped nullifier and a counter.
 | **Wallet** | [1AM Wallet](https://1am.xyz) (Chrome extension) |
 | **Stack** | Compact · Midnight.js · 1AM Wallet · Next.js · TypeScript |
 | **Repository** | https://github.com/shellyjellyyy/zk-trial |
-| **Product X profile** | Public Product X profile will be linked here before final submission. |
+| **X (announcement post)** | https://x.com/shellyjelllyyyy/status/2105060189300986082 |
 
 [![CI](https://github.com/shellyjellyyy/zk-trial/actions/workflows/ci.yml/badge.svg)](https://github.com/shellyjellyyy/zk-trial/actions/workflows/ci.yml)
 
@@ -209,6 +209,10 @@ https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app
 Open **Trials → TRIAL-001** to run the enrollment flow (requires the 1AM
 Wallet extension on Midnight Preprod), or open **Sponsor Dashboard** to see
 the public enrollment count read live from chain state — no wallet needed.
+
+Screenshots of the running app (landing page, connected-wallet enrollment,
+confirmed transaction, sponsor dashboard) are prepared for the submission
+and will be added under `docs/screenshots/`.
 
 ## Network
 
@@ -416,7 +420,10 @@ Summary (full version in [`SECURITY.md`](./SECURITY.md)):
 
 ## Product X
 
-Public Product X profile will be linked here before final submission.
+The project announcement post is live on X:
+https://x.com/shellyjelllyyyy/status/2105060189300986082
+
+A dedicated Product X profile, if created, will be linked there as well.
 The prepared profile copy, launch post, and setup checklist are in
 [`docs/PRODUCT_X_SETUP.md`](./docs/PRODUCT_X_SETUP.md).
 

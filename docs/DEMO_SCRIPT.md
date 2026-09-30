@@ -128,6 +128,6 @@ private eligibility for clinical trials. Thanks for watching."
 - [ ] Synthetic values only — never real health data on camera
 - [ ] The full pipeline statuses visible (do not cut the wallet approvals)
 - [ ] Transaction id + block height clearly readable in frame
-- [ ] Sponsor dashboard count visible (currently 2)
+- [ ] Sponsor dashboard count visible (the live on-chain value)
 - [ ] Final frame: GitHub repo or the confirmation card
 - [ ] Total length under 3:00

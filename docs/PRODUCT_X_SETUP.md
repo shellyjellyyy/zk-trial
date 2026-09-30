@@ -1,9 +1,11 @@
-# Product X Setup — Manual Checklist
+# Product X Setup
 
-> **Status: the Product X profile does not exist yet.** Everything below is
-> prepared copy — the account creation, posting, and pinning must be done
-> manually. Do not cite any Product X URL in the submission until the profile
-> is live and you have pasted the real link here and into the README.
+> **Status: the announcement post is live:**
+> https://x.com/shellyjelllyyyy/status/2105060189300986082
+>
+> A dedicated Product X **profile** has not been verified as existing; the
+> remaining optional steps below cover creating/polishing a profile and
+> pinning the announcement. Nothing in the submission depends on them.
 
 ## 1. Suggested profile bio (≤ 160 chars)
 
@@ -70,21 +72,14 @@ launch post with the video attached and pin **that** instead:
 
 ## 7. Manual steps (in order)
 
-1. **Create the Product X profile** (handle + bio from §1). Use a handle you
-   are comfortable putting on a public submission.
-2. Add a profile image and header (the app's shield motif or a simple
-   zk-trial wordmark is enough).
-3. Put the **live demo URL** in the profile's website field.
-4. Publish the **launch post** (§3). Check the links unfurl correctly.
-5. Record/upload the demo video and **quote-repost** the launch post (§4),
-   then pin it.
-6. Follow/repost any program-relevant accounts (e.g. Rise In, Midnight) only
-   if you want them visible on the profile.
-7. **Update the README**: replace the placeholder sentence in the
-   "Product X" section with the real profile URL, and add the same URL to
-   `docs/SUBMISSION_CHECKLIST.md`.
-8. Only then mark "Product X profile" as DONE in
-   `docs/SUBMISSION_CHECKLIST.md`.
+- [x] **Announcement post published**: https://x.com/shellyjelllyyyy/status/2105060189300986082
+- [ ] Optionally create a dedicated Product X **profile** (bio from §1),
+      add a profile image/header, and put the **live demo URL** in its
+      website field.
+- [ ] Optionally quote-repost the announcement with the demo video (§4) and
+      pin it.
+- [ ] If a profile is created, link it from the README "Product X" section
+      and update `docs/SUBMISSION_CHECKLIST.md`.
 
 ## 8. Facts you must not change in any post
 

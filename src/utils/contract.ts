@@ -26,10 +26,11 @@ export function rememberContractAddress(address: string): void {
  * Resolve the zk-trial contract address for this deployment.
  *
  * Priority: NEXT_PUBLIC_ZKTRIAL_CONTRACT_ADDRESS (baked at build time, e.g.
- * from the Vercel dashboard) > the address recorded in localStorage by a
+ * from the Vercel dashboard — the production deployment sets the real Preprod
+ * contract, see README) > the address recorded in localStorage by a
  * browser-side deployment through 1AM Wallet > the value in
- * src/midnight/config.ts. Empty string means "not deployed yet" and the UI
- * must show that honestly.
+ * src/midnight/config.ts. Empty string means "not deployed yet" (fresh local
+ * checkout) and the UI must show that honestly.
  */
 export function resolveContractAddress(): string {
   const fromEnv =
