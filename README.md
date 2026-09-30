@@ -263,10 +263,27 @@ Open **Trials → TRIAL-001** to run the enrollment flow (requires the 1AM
 Wallet extension on Midnight Preprod), or open **Sponsor Dashboard** to see
 the public enrollment count read live from chain state — no wallet needed.
 
-Screenshots of the running app are committed under
-[`docs/screenshots/`](./docs/screenshots/): landing page, eligibility form with
-1AM Wallet connected, confirmed enrollment transaction, and the sponsor
-dashboard. See [`docs/EVIDENCE_CHECKLIST.md`](./docs/EVIDENCE_CHECKLIST.md).
+## Screenshots
+
+### Landing Page
+
+![zk-trial landing page](docs/screenshots/01-landing.png)
+
+### Eligibility + Wallet
+
+![Eligibility and wallet connection](docs/screenshots/02-eligibility-wallet.png)
+
+### Enrollment Confirmation
+
+![Enrollment confirmed on Midnight Preprod](docs/screenshots/03-enrollment-confirmed.png)
+
+### Sponsor Dashboard
+
+![Sponsor dashboard](docs/screenshots/04-sponsor-dashboard.png)
+
+All four images use synthetic demo data only. See
+[`docs/EVIDENCE_CHECKLIST.md`](./docs/EVIDENCE_CHECKLIST.md) for what each
+screenshot demonstrates.
 
 ## Prerequisites
 
