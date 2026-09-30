@@ -17,6 +17,7 @@ ledger sees only an anonymous, trial-scoped nullifier and a counter.
 | | |
 |---|---|
 | **Live demo** | [https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app/](https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app/) |
+| **Demo video** | [https://www.loom.com/share/1edb951a957a4dc097ee4c3293619d58](https://www.loom.com/share/1edb951a957a4dc097ee4c3293619d58) |
 | **Network** | Midnight **Preprod** |
 | **Contract** | `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3` |
 | **Wallet** | [1AM Wallet](https://1am.xyz) (Chrome extension) |
@@ -205,6 +206,13 @@ authoritative description of Midnight's protocol-level guarantees, see the
 ## Live Demo
 
 https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app
+
+## 🎥 Demo
+
+Watch the full walkthrough of the enrollment flow, the sponsor dashboard, and
+the proving pipeline:
+
+https://www.loom.com/share/1edb951a957a4dc097ee4c3293619d58
 
 Open **Trials → TRIAL-001** to run the enrollment flow (requires the 1AM
 Wallet extension on Midnight Preprod), or open **Sponsor Dashboard** to see
