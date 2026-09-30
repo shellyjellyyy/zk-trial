@@ -18,7 +18,7 @@ General rules:
 
 | # | File name | Shot | What it proves | Must be visible | Redact / avoid |
 |---|---|---|---|---|---|
-| 1 | `01-landing.png` | Landing page of the live deployment | The demo is live on Vercel and is the real app | URL bar showing `zk-trial-kaiqa94aj-shailja-srivastav.vercel.app`; hero + trial card | browser bookmarks bar, personal tabs |
+| 1 | `01-landing.png` | Landing page of the live deployment | The demo is live on Vercel and is the real app | URL bar showing `zk-trial-qin0ddun1-shailja-srivastav.vercel.app`; hero + trial card | browser bookmarks bar, personal tabs |
 | 2 | `02-eligibility-form.png` | Eligibility form on `/trials/TRIAL-001` with synthetic values filled | The six private inputs are collected browser-side | All six fields filled with **synthetic** values; criteria card above | real health data; any personal info |
 | 3 | `03-wallet-connected.png` | 1AM Wallet connected state | Real 1AM Wallet integration over the DApp Connector | "1AM Wallet connected" state in the app (and the 1AM popup if convenient); Preprod network label | wallet address, balances, recovery-phrase screens (never) |
 | 4 | `04-enrollment-confirmation.png` | Confirmed enrollment card | End-to-end enrollment succeeded | Confirmed card: anonymous ID (nullifier), tx id, block height, enrollment count | none required — nullifier is pseudonymous; keep as-is |

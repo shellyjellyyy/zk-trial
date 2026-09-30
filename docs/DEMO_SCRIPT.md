@@ -4,8 +4,8 @@ Recording setup: Chrome with the **1AM Wallet extension installed and on
 Midnight Preprod**, screen recorder at 1080p, browser zoomed to ~110%,
 Tabs pre-opened:
 
-1. Live app (participant view): https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app
-2. Sponsor dashboard: https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app/sponsor
+1. Live app (participant view): https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app
+2. Sponsor dashboard: https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app/sponsor
 3. GitHub repo: https://github.com/shellyjellyyy/zk-trial
 
 Use **synthetic values** for the enrollment demo. If you prefer not to burn a

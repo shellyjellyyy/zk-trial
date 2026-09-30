@@ -77,7 +77,7 @@ happen — never before.
 ## Repository & milestones
 
 - Remote: https://github.com/shellyjellyyy/zk-trial
-- Live demo: https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app
+- Live demo: https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app
 - Deployed contract (Midnight Preprod):
   `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3`
 - 18 meaningful commits covering: Compact privacy core, contract test

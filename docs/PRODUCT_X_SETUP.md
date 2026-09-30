@@ -39,7 +39,7 @@ browser".)
 > ✅ Sponsor sees only an anonymous nullifier + a counter
 > ✅ 37 tests, CI green, live demo
 >
-> 🌐 Live demo: https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app
+> 🌐 Live demo: https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app
 > 💻 Code: https://github.com/shellyjellyyy/zk-trial
 >
 > #Midnight #ZeroKnowledge #Privacy #BuildOnMidnight #RiseIn
@@ -58,7 +58,7 @@ launch post with the video attached and pin **that** instead:
 | Link | URL |
 |---|---|
 | Repository | https://github.com/shellyjellyyy/zk-trial |
-| Live demo | https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app |
+| Live demo | https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app |
 | Rise In program | https://www.risein.com/programs/new-moon-to-full-monthly-moonshots-on-midnight/tasks/submission/nIfMvAE5xiJxBYNZT |
 | Contract (Midnight Preprod) | `dfdd24401b50b93356cb0e4f16d85c9626642d586d634c328bb0d978e759ced3` |
 

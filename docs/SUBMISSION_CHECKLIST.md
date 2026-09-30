@@ -22,7 +22,7 @@ your personal account/credentials, action listed · **PENDING** = not yet done �
 | Tests | **37/37 passing** (`npm test`): 35 contract tests + 2 runtime-identity tests | **DONE** |
 | CI/CD | `.github/workflows/ci.yml` green: compile+artifact-diff, vitest, tsc, lint, build | **DONE** |
 | Public GitHub | https://github.com/shellyjellyyy/zk-trial (public) | **DONE** |
-| Live Vercel demo | https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app | **DONE** |
+| Live Vercel demo | https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app | **DONE** |
 | 15+ meaningful commits | `git rev-list --count HEAD` → 19 total, **18 meaningful** submission commits (clean `shellyjellyyy` authorship) | **DONE** |
 | README | Submission-quality: problem, solution, privacy model, architecture, live values, setup, testing, limitations | **DONE** |
 | Docs consistency | SECURITY/PROPOSAL/USAGE/ARCHITECTURE match the shipped Midnight implementation | **DONE** |

@@ -204,7 +204,7 @@ authoritative description of Midnight's protocol-level guarantees, see the
 
 ## Live Demo
 
-https://zk-trial-kaiqa94aj-shailja-srivastav.vercel.app
+https://zk-trial-qin0ddun1-shailja-srivastav.vercel.app
 
 Open **Trials → TRIAL-001** to run the enrollment flow (requires the 1AM
 Wallet extension on Midnight Preprod), or open **Sponsor Dashboard** to see
