@@ -23,7 +23,7 @@ ledger sees only an anonymous, trial-scoped nullifier and a counter.
 | **Wallet** | [1AM Wallet](https://1am.xyz) (Chrome extension) |
 | **Stack** | Compact · Midnight.js · 1AM Wallet · Next.js · TypeScript |
 | **Repository** | https://github.com/shellyjellyyy/zk-trial |
-| **X (announcement post)** | https://x.com/shellyjelllyyyy/status/2105060189300986082 |
+| **Product X profile** | https://x.com/shellyjelllyyyy |
 
 [![CI](https://github.com/shellyjellyyy/zk-trial/actions/workflows/ci.yml/badge.svg)](https://github.com/shellyjellyyy/zk-trial/actions/workflows/ci.yml)
 
